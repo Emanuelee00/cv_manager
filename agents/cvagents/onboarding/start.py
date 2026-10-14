@@ -12,12 +12,28 @@ from cvagents.onboarding.manual_entries import collect_entries
 from cvagents.onboarding.profile import save_profile
 
 
+def read_cv(prompter, how):
+    """The CV text: pasted, or from a file asked again until it can be read (empty = skip)."""
+    if how == "paste":
+        return prompter.text(t("cv.paste"))
+    while True:
+        raw = prompter.text(t("cv.path"))
+        if not raw:
+            return ""
+        try:
+            return cv_text.read_cv_text(raw)
+        except (ValueError, OSError) as err:
+            prompter.say(t("cv.failed", error=err))
+
+
 def import_cv(prompter, conn, provider, how):
     """Read the CV (file or pasted text), extract its entries and save the confirmed ones; or collect them by hand."""
     if how == "scratch":
         return importer.add_entries(conn, collect_entries(prompter))
+    text = read_cv(prompter, how)
+    if not text:
+        return 0
     try:
-        text = cv_text.read_cv_text(prompter.text(t("cv.path"))) if how == "file" else prompter.text(t("cv.paste"))
         with prompter.step(t("step.read_cv")):
             entries = extract.extract_entries(provider, text)
     except (ValueError, OSError, LLMError) as err:

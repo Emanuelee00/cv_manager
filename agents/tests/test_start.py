@@ -72,6 +72,13 @@ class Start(unittest.TestCase):
         prompter = ScriptedPrompter(texts=PROFILE_TEXTS, selects=["en", "scratch", "done"], confirms=[False])
         self.assertIn("0 entries", start.run_start(prompter, conn, FakeProvider(), self.settings_path)[2])
 
+    def test_a_wrong_path_is_asked_again(self):
+        conn = connect(":memory:")
+        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + ["/nope/cv.pdf", f"'{cv_file()}'"], selects=["en", "file"], confirms=[False], checks=[0])
+        start.run_start(prompter, conn, FakeProvider(ENTRIES), self.settings_path)
+        self.assertTrue(any("File not found" in m for m in prompter.said))
+        self.assertEqual(count_items(conn, "cv"), 1)
+
     def test_from_zero_saves_the_typed_entries(self):
         conn = connect(":memory:")
         typed = ["Dev web", "Acme, Lyon", "2022 – 2024", "Sites pour 3 clients", "Langages", "Python, SQL"]

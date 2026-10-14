@@ -30,6 +30,16 @@ class ReadCv(unittest.TestCase):
         with self.assertRaises(ValueError):
             cv_text.read_cv_text("cv.odt")
 
+    def test_dragged_quoted_or_without_leading_slash(self):
+        folder = Path(tempfile.mkdtemp()) / "my cv"
+        folder.mkdir()
+        (folder / "cv.txt").write_text(CV, encoding="utf8")
+        path = str(folder / "cv.txt")
+        for typed in (f"'{path}'", f'"{path}" ', path.replace(" ", "\\ "), path.lstrip("/")):
+            self.assertEqual(cv_text.read_cv_text(typed), CV, typed)
+        with self.assertRaisesRegex(ValueError, "File not found"):
+            cv_text.read_cv_text(path + ".missing.pdf")
+
 
 class Extract(unittest.TestCase):
     def test_split_keeps_paragraphs_together(self):

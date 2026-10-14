@@ -3,7 +3,12 @@ name = "cvagents"
 version = "0.1.0"
 description = "Base di dati personale, ricerca (RAG) e lettura GitHub per costruire CV e lettere"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "questionary>=2.1.1",
+]
+
+[project.scripts]
+cvagents = "cvagents.cli:main"
 
 [build-system]
 requires = ["hatchling"]

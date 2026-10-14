@@ -34,8 +34,14 @@ class Fake(BaseHTTPRequestHandler):
             self.reply({"content": [{"type": "text", "text": "ok da claude"}]})
 
 
+class ClosingServer(HTTPServer):
+    def shutdown(self):
+        super().shutdown()
+        self.server_close()
+
+
 def serve():
-    server = HTTPServer(("127.0.0.1", 0), Fake)
+    server = ClosingServer(("127.0.0.1", 0), Fake)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server, f"http://127.0.0.1:{server.server_port}"
 

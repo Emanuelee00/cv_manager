@@ -27,3 +27,11 @@ def add_manual(conn, kind, title, body):
     id = f"manual:{uuid.uuid4()}"
     upsert_item(conn, id, "manual", kind, title, body)
     return id
+
+
+def add_entries(conn, entries):
+    """Salva voci estratte da un CV (dopo la conferma dell'utente). Ritorna quante."""
+    for e in entries:
+        meta = {k: e.get(k, "") for k in ("org", "period", "link", "note")}
+        upsert_item(conn, f"cv:{uuid.uuid4()}", "cv", e["type"], e["title"], entry_body(e), meta)
+    return len(entries)

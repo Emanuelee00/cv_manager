@@ -1,11 +1,9 @@
 """Comandi dell'AI: doctor (controlli, installazione e download del modello locale)."""
 from cvagents import doctor, local_setup, ollama_install, sysinfo
 from cvagents.llm import ollama
-
-
-def progress(status, fraction):
-    shown = f"{fraction:4.0%}" if fraction is not None else "  ..."
-    print(f"\r{shown} {status[:50]:<50}", end="", flush=True)
+from cvagents.onboarding.prompter import Aborted, QuestionaryPrompter
+from cvagents.onboarding.start import run_start
+from cvagents.progress import progress
 
 
 def install_step(args):
@@ -28,7 +26,15 @@ def doctor_cmd(args, conn):
     return "\n".join(done + doctor.report())
 
 
+def start_cmd(args, conn):
+    try:
+        return run_start(QuestionaryPrompter(), conn)[1]
+    except Aborted:
+        return "Interrotto. Quello che avevi già confermato è salvato."
+
+
 SPEC = [
+    ("start", "Percorso guidato: AI, i tuoi dati, import del CV", [], start_cmd),
     ("doctor", "Controlla cosa c'è per l'AI; --install-here e --pull per il modello locale", [
         ("--install-here", {"default": None, "help": "installa Ollama in questa cartella, senza sudo (Linux)"}),
         ("--pull", {"action": "store_true", "help": "scarica il modello consigliato"}),

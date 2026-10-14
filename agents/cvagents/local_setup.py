@@ -7,6 +7,7 @@ from cvagents.llm.ollama import DEFAULT_HOST, post_lines
 
 # (RAM minima in GiB, modello). Dimensioni da registry.ollama.ai/library/qwen3: 1.4, 2.5, 5.2, 9.3 GB.
 MODEL_TIERS = ((24, "qwen3:14b"), (12, "qwen3:8b"), (6, "qwen3:4b"), (0, "qwen3:1.7b"))
+MODEL_SIZE_GB = {"qwen3:1.7b": 1.4, "qwen3:4b": 2.5, "qwen3:8b": 5.2, "qwen3:14b": 9.3}
 HOME_CANDIDATES = (".local/bin/ollama", "ollama/bin/ollama")
 
 

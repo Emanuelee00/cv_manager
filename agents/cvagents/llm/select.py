@@ -1,5 +1,7 @@
-"""Quali provider AI sono utilizzabili adesso su questa macchina."""
+"""Which AI providers can be used right now on this machine."""
 import os
+
+from cvagents.i18n import t
 
 from cvagents.llm import claude_cli, ollama
 from cvagents.llm.anthropic import AnthropicProvider
@@ -8,7 +10,7 @@ from cvagents.llm.ollama import OllamaProvider
 
 
 def available(model=None, host=ollama.DEFAULT_HOST):
-    """Elenco di (id, etichetta, factory). Il locale compare solo se Ollama risponde."""
+    """List of (id, label, factory). The local one appears only if Ollama answers."""
     found = []
     if os.environ.get("ANTHROPIC_API_KEY"):
         found.append(("api", AnthropicProvider.name, AnthropicProvider))
@@ -22,5 +24,5 @@ def available(model=None, host=ollama.DEFAULT_HOST):
 def first_local(host):
     models = ollama.list_models(host)
     if not models:
-        raise RuntimeError("Ollama è attivo ma non ha modelli: usa `cvagents doctor`")
+        raise RuntimeError(t("llm.no_local_models"))
     return models[0]

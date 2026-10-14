@@ -95,7 +95,7 @@ class ClaudeTests(unittest.TestCase):
         with mock.patch.object(claude_cli.subprocess, "run", return_value=done) as run:
             text = ClaudeCliProvider().chat([{"role": "system", "content": "s"}, {"role": "user", "content": "u"}])
         self.assertEqual(text, "risposta")
-        self.assertIn("[ISTRUZIONI]\ns", run.call_args.kwargs["input"])
+        self.assertIn("[INSTRUCTIONS]\ns", run.call_args.kwargs["input"])
 
     def test_cli_failure_is_an_error(self):
         with mock.patch.object(claude_cli.subprocess, "run", return_value=mock.Mock(returncode=1, stdout="", stderr="no")):

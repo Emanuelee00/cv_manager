@@ -1,4 +1,4 @@
-"""Parole chiave di un'offerta e quanto un testo le copre."""
+"""Keywords of an offer and how much a text covers them."""
 import json
 import re
 import unicodedata
@@ -10,7 +10,7 @@ logiciel logiciels application applications entreprise entreprises equipe équip
 
 
 def keyword_tokens(phrases):
-    """Da frasi a parole singole significative (senza parole generiche), senza doppioni."""
+    """From phrases to single meaningful words (no generic words), without duplicates."""
     found = []
     for phrase in phrases:
         for token in re.findall(r"[\w+#.]{3,}", phrase):
@@ -20,8 +20,9 @@ def keyword_tokens(phrases):
 
 
 def keywords(provider, offer):
-    """Parole chiave dell'offerta (anche tradotte); se l'AI fallisce, le parole più lunghe dell'offerta."""
-    ask = "Estrai da questa offerta 10-15 parole chiave su competenze, tecnologie e ruolo, anche tradotte in italiano, francese e inglese. Solo JSON."
+    """Keywords of the offer (also translated); if the AI fails, the longest words of the offer."""
+    ask = ("Extract 10-15 keywords about skills, technologies and role from this job offer, also translated into English, "
+           "French, Italian and Spanish. JSON only.")
     try:
         raw = provider.chat([{"role": "system", "content": ask}, {"role": "user", "content": offer[:6000]}], schema=KEYWORDS_SCHEMA)
         found = json.loads(re.search(r"\{.*\}", raw, re.S).group(0))["keywords"]

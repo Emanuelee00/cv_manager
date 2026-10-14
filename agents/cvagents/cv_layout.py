@@ -1,5 +1,8 @@
-"""Struttura comune del CV (HTML e Word): titoli delle sezioni, ordine, dati dell'intestazione."""
+"""Shared CV structure (HTML and Word): section titles, order, header data."""
 import re
+from pathlib import Path
+
+ROOTS = (Path.cwd(), Path(__file__).resolve().parents[2], Path(__file__).resolve().parents[1])
 
 LABELS = {
     "fr": {"profile": "PROFIL", "education": "FORMATION", "experience": "EXPÉRIENCE", "project": "PROJETS", "skill": "COMPÉTENCES",
@@ -7,20 +10,30 @@ LABELS = {
     "it": {"profile": "PROFILO", "education": "FORMAZIONE", "experience": "ESPERIENZA", "project": "PROGETTI", "skill": "COMPETENZE",
            "language": "LINGUE", "certification": "CERTIFICAZIONI", "interest": "INTERESSI"},
     "en": {"profile": "PROFILE", "education": "EDUCATION", "experience": "EXPERIENCE", "project": "PROJECTS", "skill": "SKILLS",
-           "language": "LANGUAGES", "certification": "CERTIFICATIONS", "interest": "INTERESTS"}}
+           "language": "LANGUAGES", "certification": "CERTIFICATIONS", "interest": "INTERESTS"},
+    "es": {"profile": "PERFIL", "education": "FORMACIÓN", "experience": "EXPERIENCIA", "project": "PROYECTOS", "skill": "COMPETENCIAS",
+           "language": "IDIOMAS", "certification": "CERTIFICACIONES", "interest": "INTERESES"}}
 ORDER = ("education", "experience", "project", "skill", "language", "certification", "interest")
 INLINE = ("skill", "language", "certification", "interest")
-LICENSE = {"fr": "Permis", "it": "Patente", "en": "Driving licence"}
+LICENSE = {"fr": "Permis", "it": "Patente", "en": "Driving licence", "es": "Carné de conducir"}
 
+
+def resolve_photo(raw):
+    """Absolute path of the photo: as written, or relative to the current folder, the project root or agents/."""
+    if not raw:
+        return ""
+    path = Path(raw).expanduser()
+    candidates = [path] if path.is_absolute() else [root / path for root in ROOTS]
+    return next((str(c.resolve()) for c in candidates if c.is_file()), raw)
 
 
 def parse_profile(text):
-    """Estrae dal testo del profilo i campi che servono all'intestazione."""
+    """Read from the candidate profile the fields the CV header needs."""
     def field(label):
         match = re.search(rf"^{label}:\s*(.+)$", text, re.M)
         return match.group(1).strip() if match else ""
-    license_text = re.sub(r"\s*[—(].*$", "", field("PATENTE")).strip()
-    phone = re.search(r"\+?\d[\d ]{7,}\d", text.split("TELEFONI")[-1]) if "Telefoni" in text or "TELEFONI" in text else None
-    return {"name": field("NOME"), "city": field("CITTÀ"), "age": field("ETÀ"), "citizenship": field("CITTADINANZA"),
-            "license": license_text, "photo": field("FOTO").split(" (")[0], "email": (re.findall(r"[\w.+-]+@[\w-]+\.[\w.-]+", text) or [""])[0],
-            "links": re.findall(r"https?://[^\s·)]+", field("LINK")), "phone": phone.group(0) if phone else ""}
+    license_text = re.sub(r"\s*[—(].*$", "", field("LICENSE")).strip()
+    phone = re.search(r"\+?\d[\d ]{7,}\d", text.split("PHONES")[-1]) if "PHONES" in text or "Phones" in text else None
+    return {"name": field("NAME"), "city": field("CITY"), "age": field("AGE"), "citizenship": field("CITIZENSHIP"),
+            "license": license_text, "photo": resolve_photo(field("PHOTO").split(" (")[0]), "email": (re.findall(r"[\w.+-]+@[\w-]+\.[\w.-]+", text) or [""])[0],
+            "links": re.findall(r"https?://[^\s·)]+", field("LINKS")), "phone": phone.group(0) if phone else ""}

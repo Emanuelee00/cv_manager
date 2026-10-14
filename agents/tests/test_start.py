@@ -32,7 +32,7 @@ class Start(unittest.TestCase):
     def test_choices_are_saved_and_command_is_shown(self):
         conn = connect(":memory:")
         offer = cv_file("offre")
-        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + [offer], selects=["skip"], checks=["pdf", "docx"])
+        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + [offer], selects=["en", "skip"], checks=["pdf", "docx"])
         _, chosen, summary = start.run_start(prompter, conn, FakeProvider(), self.settings_path)
         saved = settings.load(self.settings_path)
         self.assertEqual((saved["offer"], saved["formats"], saved["ai"]), (offer, ["pdf", "docx"], "local"))
@@ -42,35 +42,35 @@ class Start(unittest.TestCase):
     def test_exclusions_survive_a_new_start(self):
         conn = connect(":memory:")
         set_excluded(conn, "gh:segreto")
-        start.run_start(ScriptedPrompter(texts=PROFILE_TEXTS, selects=["skip"]), conn, FakeProvider(), self.settings_path)
+        start.run_start(ScriptedPrompter(texts=PROFILE_TEXTS, selects=["en", "skip"]), conn, FakeProvider(), self.settings_path)
         self.assertEqual(set_excluded(conn, "gh:altro"), ["gh:altro", "gh:segreto"])
         self.assertEqual(set_excluded(conn, "gh:altro", False), ["gh:segreto"])
     def test_full_path_saves_profile_and_confirmed_entries(self):
         conn = connect(":memory:")
-        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + [cv_file()], selects=["file"], confirms=[False], checks=[0])
+        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + [cv_file()], selects=["en", "file"], confirms=[False], checks=[0])
         provider, chosen, summary = start.run_start(prompter, conn, FakeProvider(ENTRIES), self.settings_path)
         self.assertIsNotNone(provider)
-        self.assertIn("Ada Rossi", get_item(conn, "manual:profilo-candidato")["body"])
+        self.assertIn("Ada Rossi", get_item(conn, "manual:candidate-profile")["body"])
         self.assertEqual(count_items(conn, "cv"), 1)
-        self.assertIn("1 voci dal CV", summary)
+        self.assertIn("1 entries from your CV", summary)
 
     def test_nothing_is_saved_if_user_unticks_everything(self):
         conn = connect(":memory:")
-        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + [cv_file()], selects=["file"], confirms=[False], checks=[])
+        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + [cv_file()], selects=["en", "file"], confirms=[False], checks=[])
         start.run_start(prompter, conn, FakeProvider(ENTRIES), self.settings_path)
         self.assertEqual(count_items(conn, "cv"), 0)
 
     def test_unreadable_cv_is_reported_and_start_continues(self):
         conn = connect(":memory:")
-        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + ["/nope/cv.docx"], selects=["file"], confirms=[False])
+        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + ["/nope/cv.docx"], selects=["en", "file"], confirms=[False])
         _, _, summary = start.run_start(prompter, conn, FakeProvider(), self.settings_path)
-        self.assertTrue(any("Non ci sono riuscito" in m for m in prompter.said))
-        self.assertIn("0 voci", summary)
+        self.assertTrue(any("I could not do it" in m for m in prompter.said))
+        self.assertIn("0 entries", summary)
 
     def test_skip_cv(self):
         conn = connect(":memory:")
-        prompter = ScriptedPrompter(texts=PROFILE_TEXTS, selects=["skip"], confirms=[False])
-        self.assertIn("0 voci", start.run_start(prompter, conn, FakeProvider(), self.settings_path)[2])
+        prompter = ScriptedPrompter(texts=PROFILE_TEXTS, selects=["en", "skip"], confirms=[False])
+        self.assertIn("0 entries", start.run_start(prompter, conn, FakeProvider(), self.settings_path)[2])
 
     def test_ai_not_available_stops_cleanly(self):
         with mock.patch.object(start, "ensure_provider", side_effect=ai_setup.SetupIncomplete("manca")):
@@ -94,7 +94,7 @@ class EnsureProvider(unittest.TestCase):
             prompter = ScriptedPrompter(selects=["cli", "api"])
             provider, choice, _ = ai_setup.ensure_provider(prompter)
         self.assertEqual(choice, "api")
-        self.assertTrue(any("Claude Code non trovato" in m for m in prompter.said))
+        self.assertTrue(any("Claude Code not found" in m for m in prompter.said))
 
     def test_api_key_is_asked_hidden_and_not_saved(self):
         with mock.patch.dict("os.environ", {}, clear=True):

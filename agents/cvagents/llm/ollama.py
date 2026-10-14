@@ -1,16 +1,17 @@
-"""Modello locale tramite Ollama (HTTP su localhost, nessuna chiave)."""
+"""Local model through Ollama (HTTP on localhost, no key)."""
 import json
 import re
 import urllib.error
 import urllib.request
 
+from cvagents.i18n import t
 from cvagents.llm.base import LLMError, Provider
 
 DEFAULT_HOST = "http://127.0.0.1:11434"
 
 
 def post_lines(url, payload, timeout=600):
-    """POST JSON e restituisce le righe JSON della risposta (anche in streaming)."""
+    """POST JSON and yield the JSON lines of the answer (streaming too)."""
     request = urllib.request.Request(url, json.dumps(payload).encode(), {"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -18,7 +19,7 @@ def post_lines(url, payload, timeout=600):
                 if line.strip():
                     yield json.loads(line)
     except (urllib.error.URLError, OSError) as err:
-        raise LLMError(f"Ollama non risponde su {url}: {err}") from err
+        raise LLMError(t("llm.ollama_down", url=url, error=err)) from err
 
 
 def is_up(host=DEFAULT_HOST):
@@ -35,7 +36,7 @@ def list_models(host=DEFAULT_HOST):
 
 
 class OllamaProvider(Provider):
-    name = "Ollama (modello locale)"
+    name = "Ollama"
     local = True
 
     def __init__(self, model, host=DEFAULT_HOST, temperature=0.2):

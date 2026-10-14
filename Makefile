@@ -1,4 +1,4 @@
-# Dalla radice del progetto: `make run` fa partire il percorso dei CV (vedi agents/README.md).
+# From the project root: `make run` starts the CV path (see agents/README.md).
 .PHONY: run start doctor test
 
 run start doctor test:

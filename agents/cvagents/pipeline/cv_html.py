@@ -1,4 +1,4 @@
-"""Dal CV strutturato a HTML (CSS in templates/cv.css) e adattamento a una pagina."""
+"""From the structured CV to HTML (CSS in templates/cv.css), fitted to one page."""
 import html
 import re
 from pathlib import Path
@@ -45,7 +45,7 @@ def build_html(profile_text, cv, lang="fr"):
 
 
 def fit_one_page(profile_text, cv, lang, folder):
-    """Scrive HTML e PDF in `folder`; se il PDF supera una pagina toglie le voci meno importanti, una alla volta."""
+    """Write HTML and PDF in `folder`; if the PDF is longer than one page, drop the least important entries one by one."""
     folder = Path(folder)
     folder.mkdir(parents=True, exist_ok=True)
     html_path, pdf_path, dropped = folder / "cv.html", folder / "cv.pdf", []

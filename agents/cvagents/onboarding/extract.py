@@ -1,8 +1,9 @@
-"""Estrae le voci di un CV in dati strutturati con l'AI (schema JSON), senza inventare."""
+"""Extract the entries of a CV as structured data with the AI (JSON schema), without inventing."""
 import json
 import re
 
 from cvagents import checks
+from cvagents.i18n import t
 from cvagents.llm.base import LLMError
 
 TYPES = ["experience", "project", "hackathon", "achievement", "education", "skill", "language"]
@@ -11,13 +12,13 @@ ENTRY_SCHEMA = {"type": "object", "required": ["entries"], "properties": {"entri
     "type": "object", "required": ["type", "title"], "properties": {
         "type": {"type": "string", "enum": TYPES}, "title": STRING, "org": STRING, "period": STRING,
         "description": STRING, "result": STRING, "tags": {"type": "array", "items": STRING}, "link": STRING}}}}}
-SYSTEM = ("Estrai dal testo di un CV le sue voci: una per esperienza, progetto, hackathon, risultato, formazione, "
-          "gruppo di competenze o lingue. Non inventare nulla: copia date, numeri e nomi esattamente come nel testo; "
-          "lascia vuoto ciò che non c'è. Rispondi solo con JSON secondo lo schema.")
+SYSTEM = ("Extract the entries of a CV text: one per job, project, hackathon, achievement, education, group of skills or "
+          "languages. Invent nothing: copy dates, numbers and names exactly as in the text, in the language of the text; "
+          "leave empty what is not there. Answer only with JSON following the schema.")
 
 
 def split_text(text, max_chars=3500):
-    """Spezza il CV in blocchi (per paragrafi) che un modello piccolo regge."""
+    """Split the CV into chunks (by paragraph) that a small model can handle."""
     chunks, current = [], ""
     for paragraph in re.split(r"\n\s*\n", text):
         if current and len(current) + len(paragraph) > max_chars:
@@ -28,20 +29,20 @@ def split_text(text, max_chars=3500):
 
 
 def parse_entries(raw):
-    """Legge il JSON anche se il modello ci scrive attorno del testo."""
+    """Read the JSON even if the model wrote text around it."""
     match = re.search(r"\{.*\}", raw, re.S)
     try:
         items = json.loads(match.group(0))["entries"]
     except (AttributeError, ValueError, KeyError, TypeError) as err:
-        raise LLMError("Risposta non leggibile come elenco di voci") from err
+        raise LLMError(t("cv.unreadable_answer")) from err
     return [e for e in items if isinstance(e, dict) and e.get("title") and e.get("type") in TYPES]
 
 
 def flag_invented(entry, source_text):
-    """Segna nelle note i numeri della voce che non compaiono nel CV originale."""
+    """Flag in the note the numbers of the entry that are not in the original CV."""
     text = " ".join(str(v) for v in entry.values())
     suspect = checks.unsupported_numbers(text, [source_text])
-    return {**entry, "note": f"DA VERIFICARE: numeri non trovati nel CV: {', '.join(suspect)}"} if suspect else entry
+    return {**entry, "note": f"TO CHECK: numbers not found in the CV: {', '.join(suspect)}"} if suspect else entry
 
 
 def extract_entries(provider, text, on_chunk=None):

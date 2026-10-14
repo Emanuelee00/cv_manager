@@ -1,9 +1,11 @@
-"""Legge il testo di un CV da .txt/.md, .pdf (con pdftotext) o .docx."""
+"""Read the text of a CV from .txt/.md, .pdf (with pdftotext) or .docx."""
 import html
 import re
 import subprocess
 import zipfile
 from pathlib import Path
+
+from cvagents.i18n import t
 
 
 def read_docx(path):
@@ -17,7 +19,7 @@ def read_pdf(path):
     try:
         done = subprocess.run(["pdftotext", "-layout", str(path), "-"], capture_output=True, text=True, check=True)
     except (FileNotFoundError, subprocess.CalledProcessError) as err:
-        raise ValueError("Non riesco a leggere il PDF (serve `pdftotext`): incolla il testo del CV oppure usa .docx/.txt") from err
+        raise ValueError(t("cv.pdf_unreadable")) from err
     return done.stdout
 
 
@@ -26,5 +28,5 @@ def read_cv_text(path):
     readers = {".txt": lambda p: p.read_text(encoding="utf8"), ".md": lambda p: p.read_text(encoding="utf8"),
                ".docx": read_docx, ".pdf": read_pdf}
     if path.suffix.lower() not in readers:
-        raise ValueError(f"Formato non supportato: {path.suffix} (usa .pdf, .docx, .txt, .md)")
+        raise ValueError(t("cv.unsupported", suffix=path.suffix))
     return readers[path.suffix.lower()](path)

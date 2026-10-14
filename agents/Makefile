@@ -1,6 +1,6 @@
-# CV Agents: `make run` fa partire tutto.
-# Prima volta: percorso guidato (start). Dopo: rilancia con le scelte salvate (run).
-# OFFER=offerta.txt per usare un'altra offerta con le stesse scelte.
+# CV Agents: `make run` starts everything.
+# First time: guided path (language, AI, your details, CV, GitHub, offer). After that: runs again with the saved choices.
+# OFFER=offer.txt uses another offer with the same choices.
 
 UV := $(shell command -v uv 2>/dev/null)
 SETTINGS := data/settings.json
@@ -22,6 +22,6 @@ test: check-uv
 
 check-uv:
 ifndef UV
-	@echo "Serve uv: curl -LsSf https://astral.sh/uv/install.sh | sh  (poi riapri il terminale)"
+	@echo "uv is needed: curl -LsSf https://astral.sh/uv/install.sh | sh  (then reopen the terminal)"
 	@exit 1
 endif

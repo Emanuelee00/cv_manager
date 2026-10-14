@@ -1,4 +1,4 @@
-"""Controlli deterministici sul testo prodotto dall'AI: li fa il codice, non il modello."""
+"""Deterministic checks on AI-written text: done by code, not by the model."""
 import re
 import unicodedata
 
@@ -14,7 +14,7 @@ which their there where about these those would could should while through betwe
 
 
 def extract_facts(text):
-    """Numeri (virgola = punto), URL ed email presenti nel testo."""
+    """Numbers (comma = dot), URLs and emails found in the text."""
     urls = {u.rstrip(".,;") for u in URL.findall(text)}
     rest = EMAIL.sub(" ", URL.sub(" ", text))
     return {"numbers": {n.replace(",", ".") for n in NUMBER.findall(rest)},
@@ -22,20 +22,20 @@ def extract_facts(text):
 
 
 def compare_facts(before, after):
-    """Cosa è stato tolto o aggiunto tra due versioni (dovrebbe essere vuoto per un humanizer)."""
+    """What was removed or added between two versions (should be empty for a humanizer)."""
     a, b = extract_facts(before), extract_facts(after)
     return {kind: {"removed": sorted(a[kind] - b[kind]), "added": sorted(b[kind] - a[kind])} for kind in a
             if a[kind] != b[kind]}
 
 
 def unsupported_numbers(cv_text, source_texts):
-    """Numeri nel CV che non compaiono in nessuna fonte (voci del database, profilo): sospetti inventati."""
+    """Numbers in the CV that appear in no source (database entries, profile): suspected inventions."""
     allowed = set().union(*(extract_facts(t)["numbers"] for t in source_texts)) if source_texts else set()
     return sorted(extract_facts(cv_text)["numbers"] - allowed)
 
 
 def repeated_words(text, ignore=()):
-    """Parole significative (5+ lettere, senza accenti per il confronto) usate più di una volta."""
+    """Meaningful words (5+ letters, compared without accents) used more than once."""
     flat = unicodedata.normalize("NFKD", text.lower()).encode("ascii", "ignore").decode()
     skip = {w.lower() for w in ignore} | STOPWORDS
     counts = {}
@@ -46,5 +46,5 @@ def repeated_words(text, ignore=()):
 
 
 def unknown_sources(source_ids, database_ids):
-    """Id citati dall'AI che non esistono nel database."""
+    """Ids cited by the AI that do not exist in the database."""
     return sorted(set(source_ids) - set(database_ids))

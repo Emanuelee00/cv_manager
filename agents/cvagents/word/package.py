@@ -1,4 +1,4 @@
-"""Il file .docx: zip con documento, relazioni, stili e foto."""
+"""The .docx file: a zip with document, relationships, styles and photo."""
 import zipfile
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -24,7 +24,7 @@ ROOT_RELS = (f'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http:
 
 
 def write_package(path, body, rels, photo):
-    """Scrive lo zip del documento: contenuto, relazioni (link e foto), stili."""
+    """Write the document zip: content, relationships (links and photo), styles."""
     page = (f'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="620" w:right="737" w:bottom="620" w:left="737" '
             f'w:header="0" w:footer="0" w:gutter="0"/></w:sectPr>')
     document = f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document {W}><w:body>{body}{page}</w:body></w:document>'

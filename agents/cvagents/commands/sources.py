@@ -1,23 +1,24 @@
-"""Comandi su fonti esterne: GitHub e render del PDF."""
+"""Commands on external sources: GitHub and PDF rendering."""
 from cvagents import github, render
+from cvagents.i18n import t
 
 
 def github_sync_cmd(args, conn):
-    return f"Sincronizzati {github.sync_all(conn)} repo"
+    return t("cmd.github_synced", count=github.sync_all(conn))
 
 
 def github_deep_cmd(args, conn):
     github.sync_deep(conn, args.repo)
-    return f"Repo {args.repo} letto su tutti i rami"
+    return t("cmd.github_deep", repo=args.repo)
 
 
 def render_cmd(args, conn):
     ok, pages = render.fits_one_page(args.html, args.pdf)
-    return f"{pages} pagina/e" + (" (ok, una pagina)" if ok else " (NON sta in una pagina)")
+    return t("cmd.pages_ok" if ok else "cmd.pages_too_many", pages=pages)
 
 
 SPEC = [
-    ("github-sync", "Legge i tuoi repo GitHub (solo ramo principale)", [], github_sync_cmd),
-    ("github-deep", "Legge un repo su tutti i rami", [("repo", {})], github_deep_cmd),
-    ("render", "Da HTML a PDF e conta le pagine", [("html", {}), ("--pdf", {"default": None})], render_cmd),
+    ("github-sync", "Read your GitHub repos with gh (default branch only)", [], github_sync_cmd),
+    ("github-deep", "Read one repo on every branch", [("repo", {})], github_deep_cmd),
+    ("render", "HTML to PDF and page count", [("html", {}), ("--pdf", {"default": None})], render_cmd),
 ]

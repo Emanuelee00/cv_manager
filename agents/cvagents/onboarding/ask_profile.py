@@ -1,13 +1,16 @@
-"""Le domande dell'anagrafica."""
+"""The profile questions."""
+from cvagents.cv_layout import resolve_photo
+from cvagents.i18n import t
 from cvagents.onboarding.profile import FIELDS, OPTIONAL
 
 
 def ask_profile(prompter, existing=None):
-    """Chiede i dati base e quelli facoltativi. `existing` precompila le risposte."""
+    """Ask the basic and the optional details. `existing` pre-fills the answers."""
     existing = existing or {}
-    data = {key: prompter.text(label + ":", existing.get(key, "")) for key, label in FIELDS}
+    data = {key: prompter.text(t(f"profile.{key}") + ":", existing.get(key, "")) for key in FIELDS}
     while not data["name"]:
-        data["name"] = prompter.text("Il nome è obbligatorio. Nome e cognome:")
-    prompter.say("\nOra i dati facoltativi (puoi lasciarli vuoti):")
-    data.update({key: prompter.text(label + ":", existing.get(key, "")) for key, label in OPTIONAL})
+        data["name"] = prompter.text(t("profile.name_required"))
+    prompter.say("\n" + t("profile.optional_intro"))
+    data.update({key: prompter.text(t(f"profile.{key}") + ":", existing.get(key, "")) for key in OPTIONAL})
+    data["photo"] = resolve_photo(data["photo"])
     return data

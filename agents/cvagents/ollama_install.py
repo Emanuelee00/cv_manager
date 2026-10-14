@@ -1,4 +1,4 @@
-"""Installa e avvia Ollama in una cartella dell'utente, senza sudo (solo Linux)."""
+"""Install and start Ollama in a user folder, without sudo (Linux only)."""
 import json
 import os
 import platform
@@ -8,6 +8,7 @@ import time
 import urllib.request
 from pathlib import Path
 
+from cvagents.i18n import t
 from cvagents.llm.ollama import DEFAULT_HOST, is_up
 
 RELEASE_API = "https://api.github.com/repos/ollama/ollama/releases/latest"
@@ -15,14 +16,14 @@ ARCH = {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm64
 
 
 def pick_asset(assets, machine=None):
-    """Sceglie l'archivio Linux giusto per l'architettura (.tgz o .tar.zst)."""
+    """Pick the right Linux archive for the architecture (.tgz or .tar.zst)."""
     arch = ARCH.get((machine or platform.machine()).lower())
     wanted = f"ollama-linux-{arch}"
     for asset in assets:
         name = asset["name"]
         if arch and name.startswith(wanted) and name.endswith((".tgz", ".tar.zst")):
             return asset
-    raise RuntimeError(f"Nessun archivio Ollama per {machine or platform.machine()}: vedi https://ollama.com/download")
+    raise RuntimeError(t("ollama.no_archive", machine=machine or platform.machine()))
 
 
 def download(url, target, on_progress=None):
@@ -36,7 +37,7 @@ def download(url, target, on_progress=None):
 
 
 def install_linux(dest, on_progress=None):
-    """Scarica l'ultima release in `dest` e ritorna il percorso del programma `ollama`."""
+    """Download the latest release into `dest` and return the path of the `ollama` program."""
     dest = Path(dest).expanduser()
     dest.mkdir(parents=True, exist_ok=True)
     with urllib.request.urlopen(RELEASE_API, timeout=30) as response:
@@ -50,7 +51,7 @@ def install_linux(dest, on_progress=None):
 
 
 def start_server(binary, models_dir=None, host=DEFAULT_HOST, wait=40):
-    """Avvia `ollama serve` in background (con le sue librerie accanto) e aspetta che risponda."""
+    """Start `ollama serve` in the background (with its libraries next to it) and wait until it answers."""
     env = dict(os.environ)
     lib = Path(binary).resolve().parent.parent / "lib" / "ollama"
     env["LD_LIBRARY_PATH"] = f"{lib}:{env.get('LD_LIBRARY_PATH', '')}"
@@ -62,4 +63,4 @@ def start_server(binary, models_dir=None, host=DEFAULT_HOST, wait=40):
             return process
         time.sleep(1)
     process.terminate()
-    raise RuntimeError("Ollama non si è avviato in tempo")
+    raise RuntimeError(t("ollama.start_timeout"))

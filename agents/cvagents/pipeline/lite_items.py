@@ -1,4 +1,4 @@
-"""Modo lite: le voci del CV le costruisce il codice dal database (sezione, titolo, date, testo)."""
+"""Lite mode: code builds the CV entries from the database (section, title, dates, text)."""
 import json
 import re
 
@@ -9,7 +9,7 @@ KIND_SECTION = {"experience": "experience", "project": "project", "hackathon": "
                 "certification": "certification", "interest": "interest"}
 CAPS = {"project": 5, "experience": 4, "education": 4, "skill": 3, "language": 1, "certification": 3, "interest": 3}
 def row_to_item(row):
-    """Voce del CV da una riga del database; il testo viene dalle righe descrittive, mai dall'AI."""
+    """A CV entry from a database row; the text comes from the descriptive lines, never from the AI."""
     meta = json.loads(row["meta"])
     org, period = meta.get("org", ""), meta.get("period", "")
     lines = [l.strip() for l in row["body"].split("\n") if l.strip() and l.strip() not in (org, period)]
@@ -25,22 +25,21 @@ def row_to_item(row):
 
 
 def already_told(item, items):
-    """Una voce il cui nome è già raccontato in un'altra della stessa sezione (es. Erasmus dentro la laurea)."""
+    """An entry whose name is already told in another entry of the same section (e.g. an exchange inside a degree)."""
     key = item["title"].split(" — ")[0].split(",")[0].strip().lower()
     return len(key) > 4 and any(key in other["text"].lower() for other in items if other["section"] == item["section"])
 
 
 def recency(item):
-    """Per ordinare dal più recente: anno più alto nel periodo; «in corso», «previsto», «oggi» contano come futuro."""
+    """Sort key, most recent first: highest year in the period; "ongoing", "expected", "today" count as the future."""
     period = item.get("period", "").lower()
-    if any(w in period for w in ("corso", "cours", "previst", "prévu", "oggi", "present", "aujourd")):
-        return 9999
-    years = re.findall(r"(?:19|20)\d\d", period)
-    return max(map(int, years)) if years else 0
+    years = [int(y) for y in re.findall(r"(?:19|20)\d\d", period)]
+    ongoing = any(w in period for w in ("corso", "cours", "previst", "prévu", "oggi", "present", "aujourd", "ongoing", "expected", "actual", "curso"))
+    return (9000 if ongoing else 0) + (max(years) if years else 0)
 
 
 def build_items(rows):
-    """Voci in ordine di rilevanza, con un massimo per sezione, senza doppioni. I repo senza testo utile si saltano."""
+    """Entries by relevance, with a cap per section, without duplicates. Repos without useful text are skipped."""
     items, count = [], {}
     for row in rows:
         item = row_to_item(row)

@@ -1,4 +1,4 @@
-"""Contenuto di un repo: README e i tuoi commit (sul ramo principale o su tutti i rami)."""
+"""Content of a repo: README and your commits (default branch or every branch)."""
 import subprocess
 from urllib.parse import quote
 
@@ -7,7 +7,7 @@ COMMIT_FORMAT = '.[] | .sha + " " + (.commit.message | split("\\n")[0])'
 
 
 def optional_readme(run_gh, full):
-    """Il README può mancare: in quel caso il repo si salva comunque, senza."""
+    """The README may be missing: the repo is saved anyway, without it."""
     try:
         return run_gh("api", f"repos/{full}/readme", "-H", "Accept: application/vnd.github.raw")
     except subprocess.CalledProcessError:
@@ -20,7 +20,7 @@ def list_branches(run_gh, full):
 
 
 def my_commits(run_gh, full, login, all_branches=False):
-    """Righe '[ramo] messaggio', senza duplicati. Senza all_branches legge solo il ramo principale."""
+    """Lines '[branch] message', without duplicates. Without all_branches only the default branch is read."""
     seen = {}
     for branch in list_branches(run_gh, full) if all_branches else [None]:
         sha_param = f"sha={quote(branch, safe='')}&" if branch else ""

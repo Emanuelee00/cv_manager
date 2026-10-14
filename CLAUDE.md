@@ -12,17 +12,17 @@ CV Base: personal archive of experiences for CVs. One Node service with two face
 - Run: `npm start` (needs `APP_PASSWORD` and `MCP_SECRET`). Test: `npm test`.
 - User-facing text is in Italian.
 
-## agents/ (CV e lettere)
+## agents/ (CVs and cover letters)
 
-Python (uv; unica dipendenza esterna: `questionary`) in `agents/cvagents/`. Guida per chi clona: [agents/README.md](agents/README.md).
-- Archivio: `db.py`, `search.py` (SQLite + FTS5), `importer.py`, GitHub (`github.py` con `gh`, `github_public.py` senza chiavi).
-- AI: `llm/` (Ollama locale, API Claude, Claude Code via `claude -p`), `local_setup.py` e `ollama_install.py` (modello per RAM, installazione senza sudo).
-- Percorso: `onboarding/` (`cvagents start`), `pipeline/` (modo completo con Claude, modo lite per modelli piccoli: il codice sceglie le voci e controlla i fatti), `word/` (Word scritto a mano), `render.py` (PDF e pagine), `checks.py` (controlli deterministici).
-- Comandi in `commands/` (una tabella SPEC per modulo). Test: `cd agents && uv run python -m unittest discover -s tests -t .`.
+Python (uv; external dependencies: `questionary`, `rich`) in `agents/cvagents/`. Guide for people who clone the repo: [agents/README.md](agents/README.md). Everything is in English; user-facing messages go through `i18n.t()` with the catalog in `messages.py` (en, fr, it, es).
+- Archive: `db.py`, `search.py` (SQLite + FTS5), `importer.py`, GitHub (`github.py` with `gh`, `github_public.py` without keys).
+- AI: `llm/` (local Ollama, Claude API, Claude Code via `claude -p`), `local_setup.py` and `ollama_install.py` (model by RAM, install without sudo).
+- Path: `onboarding/` (`make run` the first time = `cvagents start`), `pipeline/` (full mode with Claude; lite mode for small models where code picks the entries and checks the facts), `word/` (hand-written .docx), `render.py` (PDF and pages), `checks.py` (deterministic checks), `ats.py` (ATS checks), `live.py` (Rich live view).
+- Commands in `commands/` (one SPEC table per module). Tests: `cd agents && uv run python -m unittest discover -s tests -t .`.
 
-Agenti in `.claude/agents/` (generici: il candidato si legge da `manual:profilo-candidato`). Skill: `/cv-start` (tutto in Claude Code con anteprima), `/cv-loop`, `/letter-flow`. I prompt degli agenti sono la fonte unica: la CLI li riusa (`prompts.py`).
+Agents in `.claude/agents/` (generic: the candidate is read from `manual:candidate-profile`). Skills: `/cv-start` (everything inside Claude Code, with preview), `/cv-loop`, `/letter-flow`. The agent prompts are the single source: the CLI reuses them (`prompts.py`).
 
-Regole d'oro: i fatti vengono solo dall'archivio; nessuna scrittura senza ok dell'utente; mai inventare numeri o risultati (lo verifica il codice); un agente = un compito; dati personali e chiavi mai in git né su disco (chiavi).
+Golden rules: facts come only from the archive; nothing is written without the user's OK; never invent numbers or results (code checks it); one agent = one job; personal data and keys never in git, keys never on disk.
 
 ## 1. Think Before Coding
 

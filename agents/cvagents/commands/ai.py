@@ -1,12 +1,13 @@
-"""Comandi dell'AI: doctor (controlli, installazione e download del modello locale)."""
+"""AI commands: doctor (checks, installing Ollama and downloading the local model)."""
 from cvagents import doctor, local_setup, ollama_install, sysinfo
+from cvagents.i18n import t
 from cvagents.llm import ollama
 from cvagents.progress import progress
 
 
 def install_step(args):
     binary = ollama_install.install_linux(args.install_here, progress)
-    return f"\nOllama installato in {binary}"
+    return "\n" + t("cmd.ollama_installed", path=binary)
 
 
 def pull_step(args):
@@ -15,7 +16,7 @@ def pull_step(args):
         ollama_install.start_server(binary, args.models_dir)
     model = args.model or local_setup.pick_model(sysinfo.total_ram_gb())
     local_setup.pull_model(model, on_progress=progress)
-    return f"\nModello {model} pronto"
+    return "\n" + t("cmd.model_ready", model=model)
 
 
 def doctor_cmd(args, conn):
@@ -25,8 +26,8 @@ def doctor_cmd(args, conn):
 
 
 SPEC = [
-    ("doctor", "Controlla cosa c'è per l'AI; --install-here e --pull per il modello locale", [
-        ("--install-here", {"default": None, "help": "installa Ollama in questa cartella, senza sudo (Linux)"}),
-        ("--pull", {"action": "store_true", "help": "scarica il modello consigliato"}),
+    ("doctor", "Check what the AI needs; --install-here and --pull for the local model", [
+        ("--install-here", {"default": None, "help": "install Ollama in this folder, without sudo (Linux)"}),
+        ("--pull", {"action": "store_true", "help": "download the suggested model"}),
         ("--model", {"default": None}), ("--models-dir", {"default": None})], doctor_cmd),
 ]

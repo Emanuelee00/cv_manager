@@ -1,8 +1,9 @@
-"""Scrive il CV come dati strutturati e lo controlla con il codice."""
+"""Write the CV as structured data and check it with code."""
 import json
 import re
 
 from cvagents import checks
+from cvagents.i18n import t
 from cvagents.llm.base import LLMError
 
 SECTIONS = ["education", "experience", "project", "skill", "language", "certification", "interest"]
@@ -11,9 +12,9 @@ CV_SCHEMA = {"type": "object", "required": ["profile", "items"], "properties": {
     "headline": STRING, "profile": STRING, "questions": {"type": "array", "items": STRING},
     "items": {"type": "array", "items": {"type": "object", "required": ["section", "title", "text", "source_id"], "properties": {
         "section": {"type": "string", "enum": SECTIONS}, "title": STRING, "period": STRING, "text": STRING, "source_id": STRING}}}}}
-FORMAT = ("Rispondi solo con JSON. 'profile': 3-4 frasi. 'headline': titolo mirato all'offerta. Ogni elemento di 'items' ha "
-          "'source_id' = l'id tra parentesi quadre della voce degli ESTRATTI da cui viene. Non usare numeri o fatti che non "
-          "sono negli ESTRATTI o nei dati del CANDIDATO. Dubbi o dati mancanti: scrivili in 'questions'.")
+FORMAT = ("Answer only with JSON. 'profile': 3-4 sentences. 'headline': a title aimed at the offer. Every element of 'items' has "
+          "'source_id' = the id in square brackets of the EXCERPT it comes from. Do not use numbers or facts that are not in the "
+          "EXCERPTS or in the CANDIDATE data. Doubts or missing data: write them in 'questions'.")
 
 
 def parse_cv(raw):
@@ -23,34 +24,34 @@ def parse_cv(raw):
         items = [i for i in cv["items"] if isinstance(i, dict) and i.get("section") in SECTIONS and i.get("title")]
         return {"headline": cv.get("headline", ""), "profile": cv["profile"], "items": items, "questions": cv.get("questions") or []}
     except (AttributeError, ValueError, KeyError, TypeError) as err:
-        raise LLMError("Il CV prodotto non è leggibile") from err
+        raise LLMError(t("cv.unreadable_cv")) from err
 
 
 def generate(provider, system, offer, context, candidate, lang, answers=""):
-    user = (f"OFFERTA:\n{offer[:5000]}\n\nCANDIDATO:\n{candidate}\n\nESTRATTI DEL DATABASE:\n{context}\n\n"
-            f"RISPOSTE DEL CANDIDATO:\n{answers or 'nessuna'}\n\nScrivi il CV in lingua: {lang}.")
+    user = (f"OFFER:\n{offer[:5000]}\n\nCANDIDATE:\n{candidate}\n\nDATABASE EXCERPTS:\n{context}\n\n"
+            f"CANDIDATE ANSWERS:\n{answers or 'none'}\n\nWrite the CV in this language: {lang}.")
     raw = provider.chat([{"role": "system", "content": system + "\n\n" + FORMAT}, {"role": "user", "content": user}], schema=CV_SCHEMA)
     return parse_cv(raw)
 
 
 def find_problems(cv, rows, candidate):
-    """Problemi verificabili dal codice: id inventati, numeri senza fonte, parole ripetute."""
+    """Problems code can verify: invented ids, numbers without a source, repeated words."""
     texts = [cv["profile"]] + [f"{i['title']} {i.get('period', '')} {i['text']}" for i in cv["items"]]
     sources = [r["body"] + " " + r["title"] for r in rows] + [candidate]
     found = []
     unknown = checks.unknown_sources([i["source_id"] for i in cv["items"]], [r["id"] for r in rows])
     if unknown:
-        found.append(f"Id non presenti negli estratti: {', '.join(unknown)}. Usa solo gli id degli ESTRATTI.")
+        found.append(f"Ids not in the excerpts: {', '.join(unknown)}. Use only the ids of the EXCERPTS.")
     invented = checks.unsupported_numbers(" ".join(texts), sources)
     if invented:
-        found.append(f"Numeri senza fonte negli estratti: {', '.join(invented)}. Toglili o usa solo numeri degli estratti.")
+        found.append(f"Numbers with no source in the excerpts: {', '.join(invented)}. Remove them or use only numbers from the excerpts.")
     repeats = checks.repeated_words(" ".join(texts))
     if repeats:
-        found.append("Parole ripetute (usa ciascuna una sola volta): " + ", ".join(list(repeats)[:8]))
+        found.append("Repeated words (use each only once): " + ", ".join(list(repeats)[:8]))
     return found
 
 
 def repair(provider, system, cv, problems, lang):
-    user = f"CV da correggere:\n{json.dumps(cv, ensure_ascii=False)}\n\nCorreggi SOLO questi problemi, senza cambiare altro:\n- " + "\n- ".join(problems)
-    raw = provider.chat([{"role": "system", "content": system + "\n\n" + FORMAT}, {"role": "user", "content": user + f"\nLingua: {lang}."}], schema=CV_SCHEMA)
+    user = f"CV to fix:\n{json.dumps(cv, ensure_ascii=False)}\n\nFix ONLY these problems, change nothing else:\n- " + "\n- ".join(problems)
+    raw = provider.chat([{"role": "system", "content": system + "\n\n" + FORMAT}, {"role": "user", "content": user + f"\nLanguage: {lang}."}], schema=CV_SCHEMA)
     return parse_cv(raw)

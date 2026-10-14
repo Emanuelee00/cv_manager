@@ -1,4 +1,4 @@
-"""Titolo e profilo scritti dall'AI, controllati dal codice (numeri senza fonte, elenchi di parole)."""
+"""Headline and profile written by the AI, checked by code (numbers without a source, word lists, overclaiming)."""
 import json
 import re
 
@@ -12,13 +12,13 @@ PROFILE_SCHEMA = {"type": "object", "required": ["headline", "profile"],
 
 
 def looks_like_list(text):
-    """Un profilo fatto di sole parole separate da virgole non è un profilo."""
+    """A profile made only of comma-separated words is not a profile."""
     words = max(len(text.split()), 1)
     return text.count(",") / words > 0.15 or len(re.split(r"[.!?]", text)) < 2 and words > 25
 
 
 def drop_unsupported(text, sources, name=""):
-    """Toglie le frasi con numeri senza fonte, con parole vietate (es. «expert») o con il nome (terza persona)."""
+    """Drop sentences with numbers without a source, banned words (e.g. "expert") or the name (third person)."""
     bad = set(checks.unsupported_numbers(text, sources))
     surname = name.split()[-1].lower() if name.split() else "\0"
 
@@ -39,16 +39,16 @@ def ask_profile(provider, system, user):
 
 
 def write_profile(provider, system, offer, candidate, items, lang):
-    """Titolo e profilo dall'AI: se è un elenco di parole si ritenta una volta, poi si usa il titolo base del candidato."""
+    """Headline and profile from the AI: if it is a list of words, retry once, then fall back to the candidate's headline."""
     facts = "\n".join(f"- {i['title']}: {i['text']}" for i in items if i["section"] in ("project", "experience", "education"))
-    user = (f"OFFERTA:\n{offer[:3000]}\n\nCANDIDATO:\n{candidate}\n\nFATTI DEL CV:\n{facts}\n\n"
-            f"Scrivi in {LANG_NAMES[lang]} un titolo mirato all'offerta e un profilo di 3-4 frasi complete che usa SOLO questi fatti. "
-            "Prima persona sobria, senza nome né età (sono già nell'intestazione), senza superlativi né «expert». JSON.")
+    user = (f"OFFER:\n{offer[:3000]}\n\nCANDIDATE:\n{candidate}\n\nCV FACTS:\n{facts}\n\n"
+            f"Write in {LANG_NAMES[lang]} a headline aimed at the offer and a profile of 3-4 complete sentences that uses ONLY these facts. "
+            "Plain first person, no name or age (they are already in the header), no superlatives, never 'expert'. JSON.")
     sources = [candidate] + [i["text"] + " " + i["title"] for i in items]
-    found = re.search(r"^NOME:\s*(.+)$", candidate, re.M)
+    found = re.search(r"^NAME:\s*(.+)$", candidate, re.M)
     name = found.group(1) if found else ""
-    base = re.search(r"^TITOLO BASE:\s*(.+)$", candidate, re.M)
-    for strict in ("", "\nNON fare un elenco di parole: scrivi 3 frasi complete in prima persona sobria."):
+    base = re.search(r"^HEADLINE:\s*(.+)$", candidate, re.M)
+    for strict in ("", "\nDo NOT write a list of words: write 3 complete sentences in plain first person."):
         headline, profile = ask_profile(provider, system, user + strict)
         headline = headline if headline and not any(w in headline.lower() for w in BANNED) else (base.group(1) if base else "")
         profile = drop_unsupported(profile, sources, name)

@@ -13,18 +13,18 @@ DATA = {"name": "Ada Rossi", "headline": "Développeuse web", "city": "Lyon, Fra
 class Profile(unittest.TestCase):
     def test_body_has_only_given_optional_fields(self):
         body = profile_body(DATA)
-        self.assertIn("NOME: Ada Rossi", body)
-        self.assertIn("PATENTE: B", body)
+        self.assertIn("NAME: Ada Rossi", body)
+        self.assertIn("LICENSE: B", body)
         self.assertNotIn("ETÀ", body)
         self.assertNotIn("FOTO", body)
 
     def test_preferences_list_what_to_show(self):
-        self.assertIn("cittadinanza, patente", preferences_body(DATA))
+        self.assertIn("citizenship, license", preferences_body(DATA))
 
     def test_save_writes_three_items(self):
         conn = connect(":memory:")
         self.assertEqual(save_profile(conn, DATA), "Ada Rossi")
-        for item_id in ("manual:profilo-candidato", "manual:preferenze-candidato", "manual:profilo-telefoni"):
+        for item_id in ("manual:candidate-profile", "manual:candidate-preferences", "manual:phones"):
             self.assertIsNotNone(get_item(conn, item_id))
 
     def test_ask_profile_insists_on_name(self):

@@ -1,8 +1,8 @@
-"""Collegano la vista dal vivo al resto senza toccarlo: un provider che trasmette il testo, un prompter che mette in pausa."""
+"""Connect the live view without touching the rest: a provider that streams text, a prompter that pauses."""
 
 
 class TrackedProvider:
-    """Come il provider originale, ma ogni chiamata conta e il testo scorre nel pannello."""
+    """Like the original provider, but each call is counted and the text scrolls in the panel."""
 
     def __init__(self, inner, board):
         self.inner, self.board = inner, board
@@ -16,7 +16,7 @@ class TrackedProvider:
 
 
 class TrackedPrompter:
-    """Come il prompter originale; prima di ogni domanda ferma il pannello, `step` apre un passo."""
+    """Like the original prompter; before each question it stops the panel, `step` opens a step."""
 
     def __init__(self, inner, board):
         self.inner, self.board = inner, board

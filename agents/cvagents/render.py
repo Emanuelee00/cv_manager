@@ -1,9 +1,11 @@
-"""Da HTML a PDF con Chromium e controllo del numero di pagine (con pdfinfo)."""
+"""HTML to PDF with Chromium, and page count with pdfinfo."""
 import re
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+
+from cvagents.i18n import t
 
 BROWSERS = ("chromium-browser", "chromium", "google-chrome")
 
@@ -13,11 +15,11 @@ def find_browser():
         path = shutil.which(name)
         if path:
             return path
-    raise FileNotFoundError("Nessun Chromium trovato (chromium-browser, chromium, google-chrome)")
+    raise FileNotFoundError(t("render.no_browser"))
 
 
 def render_pdf(html, pdf):
-    """Stampa l'HTML in PDF A4 con un profilo temporaneo, per non toccare quello dell'utente."""
+    """Print the HTML to an A4 PDF with a temporary browser profile, so the user's profile is untouched."""
     html = Path(html).resolve()
     with tempfile.TemporaryDirectory() as profile:
         cmd = [find_browser(), "--headless", "--disable-gpu", "--no-sandbox", f"--user-data-dir={profile}",
@@ -32,7 +34,7 @@ def page_count(pdf):
 
 
 def fits_one_page(html, pdf=None):
-    """Ritorna (True/False, pagine). Il PDF resta sul disco se ne dai il percorso."""
+    """Return (fits, pages). The PDF stays on disk if you give its path."""
     target = Path(pdf) if pdf else Path(tempfile.mkdtemp()) / "check.pdf"
     pages = page_count(render_pdf(html, target))
     return pages == 1, pages

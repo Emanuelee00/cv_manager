@@ -1,4 +1,4 @@
-"""Archivio SQLite: una tabella di voci e un indice FTS5 per la ricerca."""
+"""SQLite archive: one table of entries and an FTS5 index for search."""
 import json
 import sqlite3
 from datetime import datetime, timezone
@@ -27,7 +27,7 @@ def connect(path=DEFAULT_DB):
 
 
 def upsert_item(conn, id, source, kind, title, body, meta=None):
-    """Inserisce o aggiorna una voce (e il suo indice) in base all'id."""
+    """Insert or update an entry (and its index) by id."""
     now = datetime.now(timezone.utc).isoformat()
     conn.execute(
         "INSERT OR REPLACE INTO items VALUES (?, ?, ?, ?, ?, ?, ?)",

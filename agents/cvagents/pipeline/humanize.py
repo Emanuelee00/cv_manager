@@ -1,14 +1,15 @@
-"""Passata di naturalezza sul testo del CV, accettata solo se i fatti restano identici."""
+"""Humanizer pass on the CV text, accepted only if the facts stay identical."""
 import json
 import re
 
 from cvagents import checks
+from cvagents.i18n import t
 from cvagents.llm.base import LLMError
 from cvagents.prompts import load_agent_prompt
 
 TEXTS_SCHEMA = {"type": "object", "required": ["texts"], "properties": {"texts": {"type": "array", "items": {"type": "string"}}}}
-SECTIONS = ("Regola assoluta", "Cosa cerchi", "Come riscrivi")
-MODES = {"A": "Modo A: tocco leggero, una persona leggerà il CV.", "B": "Modo B: riscrittura più profonda, il CV passa da un portale."}
+SECTIONS = ("Absolute rule", "What you look for", "How you rewrite")
+MODES = {"A": "Mode A: light touch, a person will read the CV.", "B": "Mode B: deeper rewrite, the CV goes through a portal."}
 
 
 def texts_of(cv):
@@ -20,16 +21,15 @@ def facts_preserved(before, after):
 
 
 def humanize_cv(provider, cv, channel):
-    """Ritorna (cv, esito). Se i fatti cambiano o il numero di testi non torna, resta l'originale."""
+    """Return (cv, changed). If facts change or the number of texts differs, the original stays."""
     system = load_agent_prompt("humanizer", sections=SECTIONS) + "\n\n" + MODES[channel] + (
-        "\nRiscrivi ciascun testo mantenendo l'ordine. Rispondi solo con JSON: {\"texts\": [...]} con lo stesso numero di testi.")
+        "\nRewrite each text keeping the order and the language. Answer only with JSON: {\"texts\": [...]} with the same number of texts.")
     before = texts_of(cv)
     raw = provider.chat([{"role": "system", "content": system}, {"role": "user", "content": json.dumps(before, ensure_ascii=False)}], schema=TEXTS_SCHEMA)
     try:
         after = json.loads(re.search(r"\{.*\}", raw, re.S).group(0))["texts"]
     except (AttributeError, ValueError, KeyError, TypeError) as err:
-        raise LLMError("Risposta dello humanizer non leggibile") from err
+        raise LLMError(t("run.unreadable_humanizer")) from err
     if len(after) != len(before) or not facts_preserved(before, after):
-        return cv, "Lo humanizer ha cambiato dei fatti: tengo il testo originale."
-    changed = {**cv, "profile": after[0], "items": [{**i, "text": t} for i, t in zip(cv["items"], after[1:])]}
-    return changed, "Testo reso più naturale, fatti identici."
+        return cv, False
+    return {**cv, "profile": after[0], "items": [{**i, "text": text} for i, text in zip(cv["items"], after[1:])]}, True

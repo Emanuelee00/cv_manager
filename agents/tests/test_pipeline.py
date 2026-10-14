@@ -12,7 +12,7 @@ from cvagents.pipeline.lang import detect_lang
 from cvagents.pipeline.run import run_cv
 from tests.helpers import FakeProvider, ScriptedPrompter
 
-PROFILE = "NOME: Ada Rossi\nTITOLO BASE: Dev\nCITTÀ: Lyon, France\nETÀ: 26 ans\nPATENTE: B\nLINK: https://github.com/ada · email ada@x.fr"
+PROFILE = "NAME: Ada Rossi\nHEADLINE: Dev\nCITY: Lyon, France\nAGE: 26 ans\nLICENSE: B\nLINKS: https://github.com/ada · email ada@x.fr"
 
 
 def cv_json(profile="Développeuse web à Lyon.", text="Sites WordPress pour 3 clients.", extra=None):
@@ -25,7 +25,7 @@ def database():
     conn = connect(":memory:")
     upsert_item(conn, "cv:1", "cv", "experience", "Dev web", "Acme 2022 – 2024. Sites WordPress pour 3 clients.")
     upsert_item(conn, "cv:3", "cv", "education", "Master", "Lyon 2020")
-    upsert_item(conn, "manual:profilo-candidato", "manual", "profile", "Anagrafica", PROFILE)
+    upsert_item(conn, "manual:candidate-profile", "manual", "profile", "Anagrafica", PROFILE)
     return conn
 
 
@@ -55,21 +55,19 @@ class Humanize(unittest.TestCase):
         cv = generate.parse_cv(cv_json())
         texts = humanize.texts_of(cv)
         bad = FakeProvider(json.dumps({"texts": [t.replace("3", "9") for t in texts]}))
-        same, note = humanize.humanize_cv(bad, cv, "A")
-        self.assertEqual(same, cv)
-        self.assertIn("cambiato dei fatti", note)
+        same, changed = humanize.humanize_cv(bad, cv, "A")
+        self.assertEqual((same, changed), (cv, False))
 
     def test_accepts_same_facts(self):
         cv = generate.parse_cv(cv_json())
         good = FakeProvider(json.dumps({"texts": ["Nuovo profilo.", "Siti WordPress per 3 clienti.", "Master a Lione."]}))
-        new, note = humanize.humanize_cv(good, cv, "B")
-        self.assertEqual(new["profile"], "Nuovo profilo.")
-        self.assertIn("identici", note)
+        new, changed = humanize.humanize_cv(good, cv, "B")
+        self.assertEqual((new["profile"], changed), ("Nuovo profilo.", True))
 
 
 class Html(unittest.TestCase):
     def test_profile_parse_and_clickable_links(self):
-        p = cv_html.parse_profile(PROFILE + "\nTELEFONI: vedi manual:profilo-telefoni")
+        p = cv_html.parse_profile(PROFILE + "\nPHONES: vedi manual:phones")
         self.assertEqual((p["name"], p["license"], p["email"]), ("Ada Rossi", "B", "ada@x.fr"))
         page = cv_html.build_html(PROFILE, generate.parse_cv(cv_json()), "fr")
         self.assertIn('href="mailto:ada@x.fr"', page)
@@ -129,7 +127,7 @@ class Lite(unittest.TestCase):
     def test_excluded_projects_never_enter_the_cv(self):
         conn = database()
         upsert_item(conn, "gh:secret", "github", "repo", "secret", "Application WordPress privée pour un client", {"link": ""})
-        upsert_item(conn, "manual:preferenze-candidato", "manual", "preferences", "Preferenze", "x", {"excluded_ids": ["gh:secret"]})
+        upsert_item(conn, "manual:candidate-preferences", "manual", "preferences", "Preferenze", "x", {"excluded_ids": ["gh:secret"]})
         ids = [r["id"] for r in context.retrieve(conn, FakeProvider(KEYWORDS), "WordPress")]
         self.assertNotIn("gh:secret", ids)
         proposed = [o["row"]["id"] for o in lite_review.suggestions(conn, ["WordPress"], set())]
@@ -143,10 +141,10 @@ class Lite(unittest.TestCase):
 
     def test_education_is_sorted_most_recent_first(self):
         conn = connect(":memory:")
-        for i, period in enumerate(("2015 – 2020", "2025 – 2027 (previsto)", "2020 – 2024")):
+        for i, period in enumerate(("2015 – 2020", "in corso", "2025 – 2027 (previsto)", "2020 – 2024")):
             upsert_item(conn, f"cv:{i}", "cv", "education", f"Scuola {i}", f"Studi {i}", {"period": period})
         items = lite_items.build_items(conn.execute("SELECT * FROM items ORDER BY id").fetchall())
-        self.assertEqual([i["period"] for i in items], ["2025 – 2027 (previsto)", "2020 – 2024", "2015 – 2020"])
+        self.assertEqual([i["period"] for i in items], ["2025 – 2027 (previsto)", "in corso", "2020 – 2024", "2015 – 2020"])
 
     def test_same_story_is_not_told_twice(self):
         laurea = {"section": "education", "title": "Laurea, Milano", "text": "Erasmus all'UCAM Murcia (2022).", "period": "", "source_id": "a"}
@@ -185,7 +183,7 @@ class Lite(unittest.TestCase):
                                                       "offre", review.cv_as_text({"profile": "", **cv}), {"cv:1"})
         self.assertEqual(score, 3)
         self.assertEqual([o["row"]["id"] for o in options], ["cv:9"])
-        self.assertTrue(any("Kubernetes" in p and "nessuna voce" in p for p in problems))
+        self.assertTrue(any("Kubernetes" in p and "nothing in your archive" in p for p in problems))
         self.assertEqual(lite_review.add_option(cv, options[0])["items"][-1]["source_id"], "cv:9")
 
 
@@ -197,7 +195,8 @@ class EndToEnd(unittest.TestCase):
         prompter = ScriptedPrompter(confirms=[False, False])
         files, _ = run_cv(prompter, conn, provider, "WordPress", folder=tempfile.mkdtemp())
         self.assertEqual(files, [])
-        self.assertTrue(any("ANTEPRIMA" in m for m in prompter.said))
+        preview = next(m for m in prompter.said if "PREVIEW" in m)
+        self.assertIn("check that every sentence is true", preview)
 
     def test_lite_run_produces_one_page_pdf_without_touching_database(self):
         conn = database()

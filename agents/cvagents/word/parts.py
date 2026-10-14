@@ -1,4 +1,4 @@
-"""Pezzi di testo Word: testo, link, paragrafi."""
+"""Word text pieces: runs, links, paragraphs."""
 from xml.sax.saxutils import escape
 
 W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'

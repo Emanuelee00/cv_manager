@@ -1,4 +1,4 @@
-"""Legge i repo pubblici di un utente GitHub senza `gh` e senza chiavi (limite: 60 richieste/ora)."""
+"""Read a GitHub user's public repos without `gh` and without keys (limit: 60 requests/hour)."""
 import json
 import urllib.request
 
@@ -21,11 +21,11 @@ def repo_body(repo):
     except OSError:
         readme = ""
     topics = ", ".join(repo.get("topics") or [])
-    return f"{repo.get('description') or ''}\nLinguaggio: {repo.get('language') or ''}\nTopic: {topics}\nREADME:\n{readme}"
+    return f"{repo.get('description') or ''}\nLanguage: {repo.get('language') or ''}\nTopics: {topics}\nREADME:\n{readme}"
 
 
 def sync_public(conn, user, limit=15):
-    """Salva i `limit` repo pubblici più recenti (non fork) come voci GitHub. Ritorna quanti."""
+    """Save the `limit` most recent public repos (not forks) as GitHub entries. Returns how many."""
     repos = fetch(f"{API}/users/{user}/repos?sort=pushed&per_page=100")
     own = [r for r in repos if not r.get("fork")][:limit]
     for repo in own:

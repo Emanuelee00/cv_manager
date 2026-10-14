@@ -1,8 +1,9 @@
-"""Collegare GitHub: con la CLI gh (anche repo privati), solo repo pubblici, oppure saltare."""
+"""Connect GitHub: with the gh CLI (private repos too), public repos only, or skip."""
 import shutil
 import subprocess
 
 from cvagents import github, github_public
+from cvagents.i18n import t
 
 
 def gh_ready():
@@ -12,21 +13,22 @@ def gh_ready():
 
 
 def choose_github(prompter, login=""):
-    """Ritorna (modo, utente). Modo: gh, public o skip."""
-    options = ([("gh", "Sì, con la CLI gh già collegata (anche repo privati)")] if gh_ready() else [])
-    options += [("public", "Sì, solo i repo pubblici (basta il nome utente)"), ("skip", "No, per ora salto")]
-    mode = prompter.select("Colleghiamo il tuo GitHub? I progetti diventano fonti per il CV.", options)
-    user = prompter.text("Nome utente GitHub:", login) if mode == "public" else ""
+    """Return (mode, user). Mode: gh, public or skip."""
+    options = [("gh", t("github.option_gh"))] if gh_ready() else []
+    options += [("public", t("github.option_public")), ("skip", t("github.option_skip"))]
+    mode = prompter.select(t("github.question"), options)
+    user = prompter.text(t("github.user"), login) if mode == "public" else ""
     return mode, user
 
 
 def sync_github(prompter, conn, mode, user):
-    """Legge i repo secondo il modo scelto. Ritorna quanti ne ha salvati."""
+    """Read the repos the chosen way. Returns how many were saved."""
     try:
-        if mode == "gh":
-            return github.sync_all(conn)
-        if mode == "public" and user:
-            return github_public.sync_public(conn, user)
+        with prompter.step(t("step.github")):
+            if mode == "gh":
+                return github.sync_all(conn)
+            if mode == "public" and user:
+                return github_public.sync_public(conn, user)
     except (OSError, subprocess.CalledProcessError) as err:
-        prompter.say(f"GitHub non raggiungibile: {err}")
+        prompter.say(t("github.unreachable", error=err))
     return 0

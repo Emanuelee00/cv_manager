@@ -1,20 +1,21 @@
-"""Claude tramite Claude Code installato (`claude -p`), usa il login già fatto dall'utente."""
+"""Claude through an installed Claude Code (`claude -p`), using the login the user already has."""
 import glob
 import os
 import shutil
 import subprocess
 
+from cvagents.i18n import t
 from cvagents.llm.base import LLMError, Provider
 
 
 def flatten(messages):
-    """`claude -p` prende un solo testo: i messaggi diventano un copione unico."""
-    names = {"system": "ISTRUZIONI", "user": "UTENTE", "assistant": "ASSISTENTE"}
+    """`claude -p` takes a single text: the messages become one script."""
+    names = {"system": "INSTRUCTIONS", "user": "USER", "assistant": "ASSISTANT"}
     return "\n\n".join(f"[{names[m['role']]}]\n{m['content']}" for m in messages)
 
 
 def find_claude(command="claude"):
-    """`claude` nel PATH, oppure il programma incluso nell'estensione VS Code di Claude Code."""
+    """`claude` in PATH, or the program bundled in the Claude Code VS Code extension."""
     found = shutil.which(command)
     if found:
         return found
@@ -33,10 +34,10 @@ class ClaudeCliProvider(Provider):
     def chat(self, messages, schema=None, on_token=None):
         prompt = flatten(messages)
         if schema:
-            prompt += "\n\nRispondi SOLO con JSON valido che rispetta questo schema:\n" + str(schema)
+            prompt += "\n\nAnswer ONLY with valid JSON that follows this schema:\n" + str(schema)
         done = subprocess.run([self.command, "-p"], input=prompt, capture_output=True, text=True)
         if done.returncode != 0:
-            raise LLMError(f"claude -p ha fallito: {done.stderr.strip()[:300]}")
+            raise LLMError(t("llm.cli_failed", error=done.stderr.strip()[:300]))
         if on_token:
             on_token(done.stdout)
         return done.stdout

@@ -5,9 +5,10 @@ import zipfile
 from pathlib import Path
 from xml.dom import minidom
 
+from cvagents.cv_layout import resolve_photo
 from cvagents.word import build_docx
 
-PROFILE = "NOME: Ada Rossi\nCITTÀ: Lyon\nETÀ: 26 ans\nPATENTE: B\nLINK: https://github.com/ada · email ada@x.fr\nTELEFONI: +33 6 00 00 00 01"
+PROFILE = "NAME: Ada Rossi\nCITY: Lyon\nAGE: 26 ans\nLICENSE: B\nLINKS: https://github.com/ada · email ada@x.fr\nPHONES: +33 6 00 00 00 01"
 CV = {"headline": "Alternance dev", "profile": "Développeuse web & data <à Lyon>.", "items": [
     {"section": "experience", "title": "Dev web", "period": "2022 – 2024", "text": "Sites pour 3 clients.", "source_id": "a"},
     {"section": "interest", "title": "Tir à l'arc", "text": "tir à l'arc", "source_id": "b"}]}
@@ -35,9 +36,17 @@ class Word(unittest.TestCase):
     def test_photo_is_embedded_when_present(self):
         photo = Path(tempfile.mkdtemp()) / "foto.png"
         photo.write_bytes(PNG_1X1)
-        docx = self.build(PROFILE + f"\nFOTO: {photo}")
+        docx = self.build(PROFILE + f"\nPHOTO: {photo}")
         self.assertIn("word/media/foto.png", docx.namelist())
         self.assertTrue(re.search(r'r:embed="rId\d+"', docx.read("word/document.xml").decode()))
+
+    def test_relative_photo_path_is_found_from_the_project_root(self):
+        root = Path(__file__).resolve().parents[2]
+        photo = Path(tempfile.mkdtemp(dir=root / "agents")) / "p.png"
+        photo.write_bytes(PNG_1X1)
+        self.addCleanup(lambda: (photo.unlink(), photo.parent.rmdir()))
+        self.assertEqual(resolve_photo(str(photo.relative_to(root))), str(photo.resolve()))
+        self.assertEqual(resolve_photo(""), "")
 
     def test_no_photo_no_media(self):
         self.assertNotIn("word/media/foto.png", self.build().namelist())

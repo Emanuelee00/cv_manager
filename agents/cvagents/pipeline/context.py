@@ -1,4 +1,4 @@
-"""Cosa dare all'AI: le voci del database utili all'offerta, più profilo e dati fissi."""
+"""What to give the AI: the database entries useful for the offer, plus profile and fixed entries."""
 import json
 
 from cvagents.pipeline.keywords import keywords
@@ -6,15 +6,18 @@ from cvagents.search import search
 
 SKIP_KINDS = ("cv_document", "cover_letter", "style", "preferences", "profile")
 ALWAYS_KINDS = ("education", "language", "interest")
+CANDIDATE_IDS = ("manual:candidate-profile", "manual:candidate-preferences", "manual:phones")
 BODY_LIMIT = 700
+
+
 def excluded_ids(conn):
-    """Id che il candidato ha escluso (nel campo meta delle sue preferenze)."""
-    row = conn.execute("SELECT meta FROM items WHERE id = 'manual:preferenze-candidato'").fetchone()
+    """Ids the candidate excluded (in the meta field of their preferences)."""
+    row = conn.execute("SELECT meta FROM items WHERE id = 'manual:candidate-preferences'").fetchone()
     return set(json.loads(row["meta"]).get("excluded_ids", [])) if row else set()
 
 
 def retrieve(conn, provider, offer, limit=8):
-    """Le voci più pertinenti più quelle fisse (formazione, lingue, interessi). Le voci curate pesano il doppio dei repo."""
+    """The most relevant entries plus the fixed ones (education, languages, interests). Curated entries weigh twice as much as repos."""
     scores, rows, skip = {}, {}, excluded_ids(conn)
     for word in keywords(provider, offer):
         for rank, row in enumerate(search(conn, word, limit=5)):
@@ -28,9 +31,8 @@ def retrieve(conn, provider, offer, limit=8):
 
 
 def candidate_text(conn):
-    """Anagrafica, preferenze e telefoni del candidato, come testo per l'AI."""
-    ids = ("manual:profilo-candidato", "manual:preferenze-candidato", "manual:profilo-telefoni")
-    found = [conn.execute("SELECT body FROM items WHERE id = ?", (i,)).fetchone() for i in ids]
+    """Candidate profile, preferences and phones, as text for the AI."""
+    found = [conn.execute("SELECT body FROM items WHERE id = ?", (i,)).fetchone() for i in CANDIDATE_IDS]
     return "\n\n".join(r["body"] for r in found if r)
 
 

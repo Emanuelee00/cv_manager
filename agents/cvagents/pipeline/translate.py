@@ -1,17 +1,17 @@
-"""Traduzione di una voce alla volta, accettata solo se i fatti restano identici."""
+"""Translation one entry at a time, accepted only if the facts stay identical."""
 import re
 
 from cvagents import checks
 from cvagents.pipeline.lang import detect_lang
 
-LANG_NAMES = {"fr": "francese", "it": "italiano", "en": "inglese"}
+LANG_NAMES = {"fr": "French", "it": "Italian", "en": "English", "es": "Spanish"}
 
 
 def translate_text(provider, text, lang):
-    """Traduce una voce; se i fatti o la lunghezza non tornano, resta il testo originale."""
+    """Translate one entry; if facts or length do not match, the original text stays."""
     if len(text) < 25:
         return text
-    ask = f"Traduci in {LANG_NAMES[lang]} questo testo di CV. Stesso significato, nessuna aggiunta, stessi numeri e nomi. Rispondi solo con la traduzione."
+    ask = f"Translate this CV text into {LANG_NAMES[lang]}. Same meaning, nothing added, same numbers and names. Answer only with the translation."
     new = re.sub(r"\s*/no_\w+|\[[A-Z_]+\]", "", provider.chat([{"role": "system", "content": ask}, {"role": "user", "content": text}])).strip()
     if not new or checks.compare_facts(text, new) or not 0.5 <= len(new) / len(text) <= 1.8:
         return text
@@ -19,7 +19,7 @@ def translate_text(provider, text, lang):
 
 
 def translate_items(provider, items, lang):
-    """Traduce i testi se l'archivio è in un'altra lingua (rilevata sull'insieme, non voce per voce)."""
+    """Translate the texts if the archive is in another language (detected on the whole, not entry by entry)."""
     if not items or detect_lang(" ".join(i["text"] for i in items)) == lang:
         return items
     keep = ("language", "interest", "certification", "skill")

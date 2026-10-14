@@ -1,4 +1,4 @@
-"""Barra di avanzamento a una riga per download e operazioni lunghe."""
+"""One-line progress bar for downloads and long operations."""
 
 
 def progress(status, fraction):

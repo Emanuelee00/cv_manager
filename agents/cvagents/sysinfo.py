@@ -1,4 +1,4 @@
-"""Informazioni sulla macchina: quanta RAM c'è (Linux, macOS, Windows)."""
+"""Machine information: how much RAM there is (Linux, macOS, Windows)."""
 import ctypes
 import subprocess
 import sys
@@ -11,7 +11,7 @@ def ram_linux():
         for line in f:
             if line.startswith("MemTotal:"):
                 return int(line.split()[1]) * 1024 / GIB
-    raise RuntimeError("MemTotal non trovato")
+    raise RuntimeError("MemTotal not found")
 
 
 def ram_macos():
@@ -29,7 +29,7 @@ def ram_windows():
 
 
 def total_ram_gb():
-    """RAM totale in GiB; 0 se non si riesce a leggerla (si userà il modello più piccolo)."""
+    """Total RAM in GiB; 0 if it cannot be read (the smallest model will be used)."""
     reader = {"linux": ram_linux, "darwin": ram_macos, "win32": ram_windows}.get(sys.platform)
     try:
         return reader() if reader else 0.0

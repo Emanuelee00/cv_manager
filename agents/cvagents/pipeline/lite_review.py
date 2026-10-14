@@ -1,4 +1,5 @@
-"""Modo lite: la valutazione la fa il codice (parole chiave dell'offerta presenti o assenti nel CV)."""
+"""Lite mode: the review is done by code (offer keywords present or missing in the CV)."""
+from cvagents.i18n import t
 from cvagents.pipeline import context
 from cvagents.pipeline.keywords import coverage, flat, keywords
 from cvagents.pipeline.lite_items import row_to_item
@@ -6,7 +7,7 @@ from cvagents.search import search
 
 
 def suggestions(conn, missing, used_ids):
-    """Per ogni parola assente, la voce del database che la conferma e che non è ancora nel CV."""
+    """For each missing word, the database entry that confirms it and is not in the CV yet."""
     found, skip = [], context.excluded_ids(conn)
     for word in missing:
         for row in search(conn, word, limit=4):
@@ -17,19 +18,18 @@ def suggestions(conn, missing, used_ids):
 
 
 def review(conn, provider, offer, cv_text, used_ids):
-    """Ritorna (punteggio, problemi, proposte). Una proposta aggiunge una voce vera del database."""
+    """Return (score, problems, proposals). A proposal adds a real database entry."""
     words = keywords(provider, offer)[:12]
     covered, missing = coverage(words, cv_text)
     options = suggestions(conn, missing, used_ids)
     score = max(1, round(10 * len(covered) / len(words))) if words else 5
-    covered_by_options = {s["word"] for s in options}
-    problems = [f"L'offerta cita «{w}»: " + ("una voce del database lo conferma, non è nel CV" if w in covered_by_options else
-                "nessuna voce del database lo conferma (se è vero, aggiungilo a mano)") for w in missing[:6]]
+    in_archive = {s["word"] for s in options}
+    problems = [t("review.in_archive" if w in in_archive else "review.not_in_archive", word=w) for w in missing[:6]]
     return score, problems, options
 
 
 def option_label(option):
-    return f"Aggiungere «{option['row']['title']}» (copre «{option['word']}»)"
+    return t("review.add_entry", title=option["row"]["title"], word=option["word"])
 
 
 def add_option(cv, option):

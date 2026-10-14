@@ -1,9 +1,9 @@
-"""Ricerca per parole chiave (FTS5, ranking BM25) sull'archivio."""
+"""Keyword search (FTS5, BM25 ranking) over the archive."""
 import re
 
 
 def build_match(query):
-    """Trasforma il testo libero in una query FTS5: parole in OR, con prefisso (develop* trova developer)."""
+    """Turn free text into an FTS5 query: words joined by OR, as prefixes (develop* finds developer)."""
     words = re.findall(r"\w{2,}", query)
     return " OR ".join(f'"{w}"*' for w in words)
 

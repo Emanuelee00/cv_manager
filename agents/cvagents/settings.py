@@ -1,10 +1,13 @@
-"""Le scelte fatte con `cvagents start`, salvate per rilanciare tutto con `cvagents run`. Mai chiavi API su disco."""
+"""Choices made with `cvagents start`, saved so `cvagents run` can redo everything. API keys are never written to disk."""
 import json
 from pathlib import Path
 
+from cvagents.i18n import t
+
 PATH = Path(__file__).resolve().parent.parent / "data" / "settings.json"
-DEFAULTS = {"ai": "", "model": "", "github": "skip", "github_user": "", "offer": "", "lang": "", "formats": ["pdf"], "out": "output"}
-RUN_COMMAND = "uv run cvagents run"
+DEFAULTS = {"ui_lang": "", "ai": "", "model": "", "github": "skip", "github_user": "", "offer": "", "lang": "",
+            "formats": ["pdf"], "out": "output"}
+RUN_COMMAND = "make run"
 
 
 def load(path=PATH):
@@ -21,7 +24,7 @@ def save(settings, path=PATH):
 
 
 def describe(settings):
-    """Riepilogo leggibile delle scelte, per l'utente."""
-    ai = {"cli": "Claude Code", "api": "Claude con chiave API", "local": f"modello locale {settings['model']}"}.get(settings["ai"], "?")
-    return (f"AI: {ai} · GitHub: {settings['github']}" + (f" ({settings['github_user']})" if settings["github_user"] else "") +
-            f" · formato: {', '.join(settings['formats'])} · offerta: {settings['offer'] or 'da indicare'}")
+    """Readable summary of the saved choices."""
+    ai = {"cli": "Claude Code", "api": t("settings.ai_api"), "local": t("settings.ai_local", model=settings["model"])}.get(settings["ai"], "?")
+    github = t(f"settings.github_{settings['github']}") + (f" ({settings['github_user']})" if settings["github_user"] else "")
+    return t("settings.summary", ai=ai, github=github, formats=", ".join(settings["formats"]), offer=settings["offer"] or t("settings.no_offer"))

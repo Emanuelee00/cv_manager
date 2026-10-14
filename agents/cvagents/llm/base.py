@@ -1,20 +1,21 @@
-"""Interfaccia comune dei provider AI: stessi messaggi, stessa risposta."""
+"""Common interface of the AI providers: same messages in, same text out."""
+from cvagents.i18n import t
+
 
 
 class LLMError(RuntimeError):
-    """Il provider non risponde o risponde in modo inutilizzabile."""
+    """The provider does not answer, or answers with something unusable."""
 
 
 class Provider:
-    """Un provider espone `chat(messages)` e dice se i dati restano sul computer."""
+    """A provider exposes `chat(messages)` and says whether data stays on the computer."""
 
     name = "base"
     local = False
 
     def chat(self, messages, schema=None, on_token=None):
-        """messages: [{'role': 'system'|'user'|'assistant', 'content': str}]. Ritorna il testo."""
+        """messages: [{'role': 'system'|'user'|'assistant', 'content': str}]. Returns the text."""
         raise NotImplementedError
 
     def describe(self):
-        where = "sul tuo computer" if self.local else "inviati a un servizio esterno"
-        return f"{self.name} (dati {where})"
+        return t("llm.describe_local" if self.local else "llm.describe_remote", name=self.name)

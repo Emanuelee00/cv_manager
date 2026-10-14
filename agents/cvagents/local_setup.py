@@ -1,23 +1,24 @@
-"""Modello locale con Ollama: scelta del modello, ricerca del programma, download."""
+"""Local model with Ollama: model choice, finding the program, download."""
 import shutil
 import sys
 from pathlib import Path
 
+from cvagents.i18n import t
 from cvagents.llm.ollama import DEFAULT_HOST, post_lines
 
-# (RAM minima in GiB, modello). Dimensioni da registry.ollama.ai/library/qwen3: 1.4, 2.5, 5.2, 9.3 GB.
+# (minimum RAM in GiB, model). Sizes from registry.ollama.ai/library/qwen3: 1.4, 2.5, 5.2, 9.3 GB.
 MODEL_TIERS = ((24, "qwen3:14b"), (12, "qwen3:8b"), (6, "qwen3:4b"), (0, "qwen3:1.7b"))
 MODEL_SIZE_GB = {"qwen3:1.7b": 1.4, "qwen3:4b": 2.5, "qwen3:8b": 5.2, "qwen3:14b": 9.3}
 HOME_CANDIDATES = (".local/bin/ollama", "ollama/bin/ollama")
 
 
 def pick_model(ram_gb):
-    """Il modello Qwen3 più grande che la RAM permette (RAM sconosciuta: il più piccolo)."""
+    """The largest Qwen3 model the RAM allows (unknown RAM: the smallest)."""
     return next(model for minimum, model in MODEL_TIERS if ram_gb >= minimum)
 
 
 def find_ollama(extra_dirs=()):
-    """Percorso del programma `ollama` nel PATH o in cartelle note, altrimenti None."""
+    """Path of the `ollama` program in PATH or in known folders, otherwise None."""
     found = shutil.which("ollama")
     if found:
         return found
@@ -29,18 +30,13 @@ def find_ollama(extra_dirs=()):
 
 
 def install_hint(platform=None):
-    """Come installare Ollama sul sistema dell'utente, in italiano."""
+    """How to install Ollama on the user's system."""
     platform = platform or sys.platform
-    if platform == "win32":
-        return "Windows: scarica l'installer da https://ollama.com/download e avvialo."
-    if platform == "darwin":
-        return "macOS: scarica l'app da https://ollama.com/download oppure `brew install ollama`."
-    return ("Linux: `curl -fsSL https://ollama.com/install.sh | sh` (chiede sudo). Senza sudo: "
-            "`cvagents doctor --install-here <cartella>` lo scarica in una cartella tua.")
+    return t({"win32": "ollama.hint_windows", "darwin": "ollama.hint_macos"}.get(platform, "ollama.hint_linux"))
 
 
 def pull_model(model, host=DEFAULT_HOST, on_progress=None):
-    """Scarica un modello. on_progress(stato, frazione 0..1 oppure None)."""
+    """Download a model. on_progress(status, fraction 0..1 or None)."""
     for chunk in post_lines(f"{host}/api/pull", {"model": model, "stream": True}, timeout=3600):
         total, done = chunk.get("total"), chunk.get("completed")
         if on_progress:

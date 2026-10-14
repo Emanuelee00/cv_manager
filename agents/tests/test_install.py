@@ -45,8 +45,8 @@ class InstallLinux(unittest.TestCase):
 class Doctor(unittest.TestCase):
     def test_report_mentions_model_and_providers(self):
         text = "\n".join(doctor.report("http://127.0.0.1:1"))
-        self.assertIn("Modello locale consigliato: qwen3:", text)
-        self.assertIn("Utilizzabili ora:", text)
+        self.assertIn("Suggested local model: qwen3:", text)
+        self.assertIn("Usable now:", text)
 
 
 if __name__ == "__main__":

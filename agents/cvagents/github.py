@@ -1,8 +1,9 @@
-"""Legge i repository GitHub tramite la CLI `gh` (login dal browser, nessun token da gestire)."""
+"""Read GitHub repositories through the `gh` CLI (browser login, no token to manage)."""
 import json
 import subprocess
 
 from cvagents.db import get_item, upsert_item
+from cvagents.i18n import t
 from cvagents.repo_content import my_commits, optional_readme
 
 README_LIMIT = 6000
@@ -15,19 +16,19 @@ def run_gh(*args):
 
 
 def repo_body(repo, login, all_branches):
-    """Testo di un repo: descrizione, linguaggi, README e i tuoi messaggi di commit."""
+    """Text of a repo: description, languages, README and your commit messages."""
     full = f"{login}/{repo['name']}"
     langs = ", ".join(json.loads(run_gh("api", f"repos/{full}/languages")))
     readme = optional_readme(run_gh, full)
     commits = my_commits(run_gh, full, login, all_branches)
     return (
-        f"{repo.get('description') or ''}\nLinguaggi: {langs}\n"
+        f"{repo.get('description') or ''}\nLanguages: {langs}\n"
         f"Commit:\n{commits}\nREADME:\n{readme[:README_LIMIT]}"
     )
 
 
 def sync_repo(conn, repo, login, all_branches=False):
-    """Un repo letto in profondità (tutti i rami) resta tale nelle sincronizzazioni successive."""
+    """A repo read in depth (all branches) stays that way in later syncs."""
     old = get_item(conn, f"gh:{repo['name']}")
     deep = all_branches or bool(old and json.loads(old["meta"]).get("deep"))
     meta = {"link": repo["url"], "pushedAt": repo.get("pushedAt", ""), "deep": deep}
@@ -35,7 +36,7 @@ def sync_repo(conn, repo, login, all_branches=False):
 
 
 def sync_all(conn, include_forks=False):
-    """Legge tutti i tuoi repo (solo ramo principale, tranne quelli già scelti in profondità)."""
+    """Read all your repos (default branch only, except those already marked as deep)."""
     login = run_gh("api", "user", "--jq", ".login").strip()
     repos = json.loads(run_gh("repo", "list", "--limit", "200", "--json", REPO_FIELDS))
     done = 0
@@ -44,12 +45,12 @@ def sync_all(conn, include_forks=False):
             sync_repo(conn, repo, login)
             done += 1
         except subprocess.CalledProcessError as err:
-            print(f"saltato {repo['name']}: {err.stderr.strip()}")
+            print(t("github.skipped", repo=repo["name"], error=err.stderr.strip()))
     return done
 
 
 def sync_deep(conn, name):
-    """Legge un solo repo su tutti i rami e lo segna come 'in profondità'."""
+    """Read one repo on every branch and mark it as deep."""
     login = run_gh("api", "user", "--jq", ".login").strip()
     repo = json.loads(run_gh("repo", "view", f"{login}/{name}", "--json", REPO_FIELDS))
     sync_repo(conn, repo, login, all_branches=True)

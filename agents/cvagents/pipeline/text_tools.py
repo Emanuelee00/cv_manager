@@ -1,7 +1,8 @@
-"""Pulizia dei testi delle voci: titoli, frasi troppo lunghe, descrizioni dei repo."""
+"""Cleaning entry texts: titles, overlong sentences, repo descriptions."""
 import re
 
-SKIP_PREFIXES = ("Tag:", "Linguaggi:", "Commit:", "README:", "Linguaggio:", "Topic:", "DA COMPLETARE", "DA VERIFICARE")
+SKIP_PREFIXES = ("Tag:", "Tags:", "Languages:", "Language:", "Linguaggi:", "Linguaggio:", "Commit:", "README:", "Topic:", "Topics:",
+                 "TO COMPLETE", "TO CHECK", "DA COMPLETARE", "DA VERIFICARE")
 MAX_CHARS = 260
 
 
@@ -18,7 +19,7 @@ def cut_sentence(text, limit=MAX_CHARS):
 
 
 def readme_summary(body):
-    """Prima frase utile del README (senza titoli, link o markdown), per i repo senza descrizione."""
+    """First useful sentence of the README (no headings, links or markdown), for repos without a description."""
     readme = body.split("README:", 1)[-1] if "README:" in body else ""
     for paragraph in re.split(r"\n\s*\n", readme):
         text = re.sub(r"[#*>`_\[\]()]|!\S+|https?://\S+", " ", paragraph)
@@ -29,6 +30,6 @@ def readme_summary(body):
 
 
 def repo_text(body):
-    """Descrizione del repo (prima riga del corpo) oppure riassunto del README."""
+    """Repo description (first line of the body) or a README summary."""
     first = body.split("\n", 1)[0].strip()
-    return first if len(first) > 20 and not first.startswith(("Linguaggi:", "Commit:")) else readme_summary(body)
+    return first if len(first) > 20 and not first.startswith(("Languages:", "Linguaggi:", "Commit:")) else readme_summary(body)

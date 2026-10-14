@@ -1,11 +1,11 @@
-"""Domande all'utente nel terminale (questionary). I test usano un finto prompter con gli stessi metodi."""
+"""Questions to the user in the terminal (questionary). Tests use a fake prompter with the same methods."""
 from contextlib import nullcontext
 
 import questionary
 
 
 class Aborted(Exception):
-    """L'utente ha interrotto (Ctrl+C)."""
+    """The user interrupted (Ctrl+C)."""
 
 
 def answer(question):
@@ -27,11 +27,11 @@ class QuestionaryPrompter:
         return answer(questionary.confirm(message, default=default))
 
     def select(self, message, choices):
-        """choices: [(valore, etichetta)]. Ritorna il valore scelto."""
+        """choices: [(value, label)]. Returns the chosen value."""
         options = [questionary.Choice(label, value=value) for value, label in choices]
         return answer(questionary.select(message, choices=options))
 
     def checkbox(self, message, choices):
-        """choices: [(valore, etichetta)], tutte preselezionate. Ritorna i valori scelti."""
+        """choices: [(value, label)], all pre-selected. Returns the chosen values."""
         options = [questionary.Choice(label, value=value, checked=True) for value, label in choices]
         return answer(questionary.checkbox(message, choices=options))

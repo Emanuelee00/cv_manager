@@ -10,14 +10,14 @@ from tests.helpers import FakeProvider
 class Prompts(unittest.TestCase):
     def test_agent_prompt_has_no_frontmatter_and_starts_with_no_tools_notice(self):
         text = prompts.load_agent_prompt("cv-generator")
-        self.assertTrue(text.startswith("MODALITÀ SENZA STRUMENTI"))
+        self.assertTrue(text.startswith("NO-TOOLS MODE"))
         self.assertNotIn("tools: Bash", text)
 
     def test_sections_filter_by_prefix(self):
-        text = prompts.load_agent_prompt("cv-generator", sections=("Stile", "Se non sei sicuro"))
-        self.assertIn("## Stile", text)
-        self.assertIn("## Se non sei sicuro", text)
-        self.assertNotIn("## Standard francesi", text)
+        text = prompts.load_agent_prompt("cv-generator", sections=("Style", "If you are not sure"))
+        self.assertIn("## Style", text)
+        self.assertIn("## If you are not sure", text)
+        self.assertNotIn("## French standards", text)
 
     def test_split_sections(self):
         parts = prompts.split_sections("intro\n## A\nuno\n## B\ndue")
@@ -45,8 +45,8 @@ class Context(unittest.TestCase):
         self.assertNotIn("cv:2", ids)
 
     def test_candidate_text_and_format(self):
-        upsert_item(self.conn, "manual:profilo-candidato", "manual", "profile", "Anagrafica", "NOME: Ada")
-        self.assertEqual(context.candidate_text(self.conn), "NOME: Ada")
+        upsert_item(self.conn, "manual:candidate-profile", "manual", "profile", "Anagrafica", "NAME: Ada")
+        self.assertEqual(context.candidate_text(self.conn), "NAME: Ada")
         rows = self.conn.execute("SELECT * FROM items WHERE id='cv:1'").fetchall()
         self.assertIn("[cv:1] (experience) Dev WordPress", context.format_context(rows))
 

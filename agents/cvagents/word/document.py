@@ -1,15 +1,15 @@
-"""Compone il CV strutturato in un documento Word."""
+"""Lay out the structured CV as a Word document."""
 import re
 from pathlib import Path
 
 from cvagents.cv_layout import INLINE, LABELS, LICENSE, ORDER, parse_profile
-from cvagents.word.layout import header_table, picture, png_size
+from cvagents.word.layout import floating_picture, png_size
 from cvagents.word.package import write_package
 from cvagents.word.parts import GREY, NAVY, TEAL, link, para, run
 
 
 def add_rel(rels, kind, target):
-    """Registra un link o la foto e ne ritorna l'id."""
+    """Register a link or the photo and return its id."""
     rid = f"rId{len(rels) + 1}"
     rels.append((rid, kind, target))
     return rid
@@ -26,12 +26,12 @@ def header(p, cv, lang, rels):
     contacts = []
     for piece in pieces:
         contacts += ([run(" · ", size=17, color=GREY)] if contacts else []) + [piece]
-    left = (para([run(p["name"].upper(), True, 40, NAVY)], 0) + para([run(cv.get("headline", ""), True, 21, TEAL)], 20) +
-            para([run(meta, size=17, color=GREY)], 20) + para(contacts, 0))
     photo = Path(p["photo"]).expanduser() if p["photo"] else None
     ok = bool(photo and photo.is_file() and png_size(photo))
-    right = para([picture(add_rel(rels, "image", "media/foto.png"))], 0) if ok else ""
-    return header_table(left, right), (photo if ok else None)
+    picture = [floating_picture(add_rel(rels, "image", "media/foto.png"))] if ok else []
+    body = (para(picture + [run(p["name"].upper(), True, 40, NAVY)], 0) + para([run(cv.get("headline", ""), True, 21, TEAL)], 20) +
+            para([run(meta, size=17, color=GREY)], 20) + para(contacts, 0))
+    return body, (photo if ok else None)
 
 
 def item(i):
@@ -47,7 +47,7 @@ def section(kind, items, label):
 
 
 def build_docx(profile_text, cv, lang, path):
-    """Scrive il CV Word in `path`. Ritorna il percorso."""
+    """Write the Word CV to `path`. Returns the path."""
     rels, labels, p = [], LABELS.get(lang, LABELS["en"]), parse_profile(profile_text)
     head, photo = header(p, cv, lang, rels)
     body = head + para([run(labels["profile"], True, 19, TEAL)], 30, 120, border=True) + para([run(cv["profile"])], 40)

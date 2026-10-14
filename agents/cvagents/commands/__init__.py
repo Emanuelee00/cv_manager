@@ -1,4 +1,4 @@
-from cvagents.commands import ai, data, sources
+from cvagents.commands import ai, archive, data, flow, sources
 
-SPEC = data.SPEC + sources.SPEC + ai.SPEC
+SPEC = data.SPEC + archive.SPEC + sources.SPEC + ai.SPEC + flow.SPEC
 HANDLERS = {name: handler for name, _, _, handler in SPEC}

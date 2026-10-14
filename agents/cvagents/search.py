@@ -13,7 +13,7 @@ def search(conn, query, limit=8, source=None):
     if not match:
         return []
     sql = (
-        "SELECT i.id, i.source, i.kind, i.title, i.body, bm25(items_fts, 0, 3, 1) AS score "
+        "SELECT i.id, i.source, i.kind, i.title, i.body, i.meta, bm25(items_fts, 0, 3, 1) AS score "
         "FROM items_fts JOIN items i ON i.id = items_fts.id "
         "WHERE items_fts MATCH ?" + (" AND i.source = ?" if source else "") +
         " ORDER BY score LIMIT ?"

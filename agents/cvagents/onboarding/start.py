@@ -1,13 +1,14 @@
-"""Il percorso guidato `cvagents start`: AI, anagrafica, import del CV, GitHub."""
-
-from cvagents import github_public, importer
+"""Il percorso guidato `cvagents start`: AI, anagrafica, CV, GitHub, offerta e formato; salva le scelte."""
+from cvagents import importer, settings
 from cvagents.llm.base import LLMError
 from cvagents.onboarding import cv_text, extract
 from cvagents.onboarding.ai_setup import SetupIncomplete, ensure_provider
 from cvagents.onboarding.ask_profile import ask_profile
+from cvagents.onboarding.github_step import choose_github, sync_github
 from cvagents.onboarding.profile import save_profile
 
 INTRO = "CV Base: ti aiuto a costruire un CV su misura per ogni offerta, usando solo fatti veri su di te."
+FORMATS = (("pdf", "PDF"), ("docx", "Word (.docx)"))
 
 
 def import_cv(prompter, conn, provider):
@@ -28,26 +29,28 @@ def import_cv(prompter, conn, provider):
     return importer.add_entries(conn, [entries[i] for i in chosen])
 
 
-def import_github(prompter, conn, login):
-    if not login or not prompter.confirm(f"Leggo i repo pubblici di {login} su GitHub?"):
-        return 0
-    try:
-        return github_public.sync_public(conn, login)
-    except OSError as err:
-        prompter.say(f"GitHub non raggiungibile: {err}")
-        return 0
+def ask_output(prompter, chosen):
+    """Offerta (file di testo) e formati del CV."""
+    chosen["offer"] = prompter.text("File di testo con l'offerta (vuoto = la indichi dopo con `cvagents run <file>`):", chosen.get("offer", ""))
+    chosen["formats"] = prompter.checkbox("In che formato vuoi il CV?", list(FORMATS)) or ["pdf"]
+    return chosen
 
 
-def run_start(prompter, conn, provider=None):
-    """Percorso completo. Ritorna (provider, riepilogo) oppure (None, messaggio) se non si può proseguire."""
+def run_start(prompter, conn, provider=None, settings_path=settings.PATH):
+    """Percorso completo. Ritorna (provider, impostazioni, riepilogo) o (None, None, messaggio)."""
     prompter.say(INTRO)
     try:
-        provider = provider or ensure_provider(prompter)
+        provider, ai, model = (provider, "local" if provider.local else "api", "") if provider else ensure_provider(prompter)
     except SetupIncomplete as err:
-        return None, str(err)
+        return None, None, str(err)
     prompter.say(f"Userò: {provider.describe()}\n")
     data = ask_profile(prompter)
     save_profile(conn, data)
     voci = import_cv(prompter, conn, provider)
-    repos = import_github(prompter, conn, data.get("github_login", ""))
-    return provider, f"Fatto, {data['name']}: {voci} voci dal CV, {repos} repo GitHub. Ora: cvagents cv <file offerta>"
+    mode, user = choose_github(prompter, data.get("github_login", ""))
+    repos = sync_github(prompter, conn, mode, user)
+    chosen = ask_output(prompter, {**settings.load(settings_path), "ai": ai, "model": model, "github": mode, "github_user": user})
+    settings.save(chosen, settings_path)
+    summary = (f"Fatto, {data['name']}: {voci} voci dal CV, {repos} repo GitHub.\nScelte salvate: {settings.describe(chosen)}\n"
+               f"Per far partire tutto con queste scelte: {settings.RUN_COMMAND}" + ("" if chosen["offer"] else " <file offerta>"))
+    return provider, chosen, summary

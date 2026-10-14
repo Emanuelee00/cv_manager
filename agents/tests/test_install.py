@@ -6,6 +6,8 @@ from pathlib import Path
 from unittest import mock
 
 from cvagents import doctor, ollama_install
+from cvagents.cli import build_parser
+from cvagents.commands import HANDLERS, SPEC
 
 
 class PickAsset(unittest.TestCase):
@@ -53,8 +55,6 @@ if __name__ == "__main__":
 
 class CliWiring(unittest.TestCase):
     def test_every_command_has_a_handler_and_parses(self):
-        from cvagents.cli import build_parser
-        from cvagents.commands import HANDLERS, SPEC
         self.assertEqual(set(HANDLERS), {name for name, *_ in SPEC})
         args = build_parser().parse_args(["search", "python", "--limit", "3"])
         self.assertEqual((args.cmd, args.limit), ("search", 3))

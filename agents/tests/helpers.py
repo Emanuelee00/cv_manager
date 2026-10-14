@@ -12,7 +12,7 @@ class ScriptedPrompter:
     def say(self, message=""):
         self.said.append(message)
 
-    def text(self, message, default=""):
+    def text(self, message, default="", hidden=False):
         self.asked.append(message)
         return self.texts.pop(0) if self.texts else default
 
@@ -25,8 +25,13 @@ class ScriptedPrompter:
         return self.selects.pop(0) if self.selects else choices[0][0]
 
     def checkbox(self, message, choices):
+        """`checks`: None = tutto selezionato; una lista = stessa risposta; una lista di liste = una risposta per domanda."""
         self.asked.append(message)
-        return [v for v, _ in choices] if self.checks is None else self.checks
+        if self.checks is None:
+            return [v for v, _ in choices]
+        if self.checks and isinstance(self.checks[0], list):
+            return self.checks.pop(0)
+        return [c for c in self.checks if c in [v for v, _ in choices]]
 
 
 class FakeProvider(Provider):

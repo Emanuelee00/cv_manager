@@ -14,11 +14,11 @@ def answer(question):
 
 
 class QuestionaryPrompter:
-    def say(self, message=""):
-        print(message)
+    say = staticmethod(print)
 
-    def text(self, message, default=""):
-        return answer(questionary.text(message, default=default)).strip()
+    def text(self, message, default="", hidden=False):
+        question = questionary.password(message) if hidden else questionary.text(message, default=default)
+        return answer(question).strip()
 
     def confirm(self, message, default=True):
         return answer(questionary.confirm(message, default=default))

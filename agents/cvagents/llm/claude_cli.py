@@ -1,4 +1,6 @@
 """Claude tramite Claude Code installato (`claude -p`), usa il login già fatto dall'utente."""
+import glob
+import os
 import shutil
 import subprocess
 
@@ -11,12 +13,22 @@ def flatten(messages):
     return "\n\n".join(f"[{names[m['role']]}]\n{m['content']}" for m in messages)
 
 
+def find_claude(command="claude"):
+    """`claude` nel PATH, oppure il programma incluso nell'estensione VS Code di Claude Code."""
+    found = shutil.which(command)
+    if found:
+        return found
+    pattern = os.path.expanduser("~/.vscode/extensions/anthropic.claude-code-*/resources/native-binary/claude")
+    candidates = sorted(glob.glob(pattern))
+    return candidates[-1] if candidates else None
+
+
 class ClaudeCliProvider(Provider):
     name = "Claude Code (claude -p)"
     local = False
 
-    def __init__(self, command="claude"):
-        self.command = command
+    def __init__(self, command=None):
+        self.command = command or find_claude() or "claude"
 
     def chat(self, messages, schema=None, on_token=None):
         prompt = flatten(messages)
@@ -31,4 +43,4 @@ class ClaudeCliProvider(Provider):
 
 
 def installed(command="claude"):
-    return shutil.which(command) is not None
+    return find_claude(command) is not None

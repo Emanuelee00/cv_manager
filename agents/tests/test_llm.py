@@ -97,14 +97,26 @@ class ClaudeTests(unittest.TestCase):
                 ClaudeCliProvider().chat([{"role": "user", "content": "x"}])
 
 
+class FindClaude(unittest.TestCase):
+    def test_falls_back_to_vscode_extension(self):
+        with mock.patch.object(claude_cli.shutil, "which", return_value=None), \
+             mock.patch.object(claude_cli.glob, "glob", return_value=["/ext/a/claude", "/ext/b/claude"]):
+            self.assertEqual(claude_cli.find_claude(), "/ext/b/claude")
+
+    def test_none_when_nothing_found(self):
+        with mock.patch.object(claude_cli.shutil, "which", return_value=None), \
+             mock.patch.object(claude_cli.glob, "glob", return_value=[]):
+            self.assertIsNone(claude_cli.find_claude())
+
+
 class AvailableTests(unittest.TestCase):
     def test_lists_only_what_works(self):
         with mock.patch.dict("os.environ", {}, clear=True), \
-             mock.patch.object(claude_cli.shutil, "which", return_value=None), \
+             mock.patch.object(claude_cli, "find_claude", return_value=None), \
              mock.patch.object(ollama, "is_up", return_value=False):
             self.assertEqual(available(), [])
         with mock.patch.dict("os.environ", {"ANTHROPIC_API_KEY": "k"}, clear=True), \
-             mock.patch.object(claude_cli.shutil, "which", return_value="/usr/bin/claude"), \
+             mock.patch.object(claude_cli, "find_claude", return_value="/usr/bin/claude"), \
              mock.patch.object(ollama, "is_up", return_value=False):
             self.assertEqual([a[0] for a in available()], ["api", "cli"])
 

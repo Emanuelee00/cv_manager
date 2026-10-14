@@ -1,5 +1,6 @@
 """Modello locale tramite Ollama (HTTP su localhost, nessuna chiave)."""
 import json
+import re
 import urllib.error
 import urllib.request
 
@@ -41,7 +42,7 @@ class OllamaProvider(Provider):
         self.model, self.host, self.temperature = model, host, temperature
 
     def chat(self, messages, schema=None, on_token=None):
-        payload = {"model": self.model, "messages": messages, "stream": True, "keep_alive": "30m",
+        payload = {"model": self.model, "messages": messages, "stream": True, "think": False, "keep_alive": "30m",
                    "options": {"temperature": self.temperature}}
         if schema:
             payload["format"] = schema
@@ -51,4 +52,4 @@ class OllamaProvider(Provider):
             parts.append(token)
             if token and on_token:
                 on_token(token)
-        return "".join(parts)
+        return re.sub(r"<think>.*?</think>", "", "".join(parts), flags=re.S).strip()

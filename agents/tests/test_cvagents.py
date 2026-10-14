@@ -52,7 +52,7 @@ def fake_gh(*args):
     if args[:2] == ("repo", "view"):
         return json.dumps({"name": "app", "description": "Un'app", "url": "u", "isFork": False})
     if args[:2] == ("api", "user"):
-        return "emanuele\n"
+        return "ada\n"
     if args[0] == "repo":
         repos = [{"name": "app", "description": "Un'app", "url": "u", "isFork": False}, {"name": "fk", "url": "u", "isFork": True}]
         return json.dumps(repos)
@@ -61,8 +61,8 @@ def fake_gh(*args):
     if args[1].endswith("/readme"):
         return "Questo README parla di rag"
     if "/branches" in args[1]:
-        return "main\nemanuele\n"
-    if "sha=emanuele" in args[1]:
+        return "main\nlavoro\n"
+    if "sha=lavoro" in args[1]:
         return "aaa fix bug\nbbb add hash HMAC"
     return "aaa fix bug"
 
@@ -86,7 +86,7 @@ class GithubSync(unittest.TestCase):
             github.sync_deep(conn, "app")
             github.sync_all(conn)
         body = search(conn, "hmac")[0]["body"]
-        self.assertIn("[emanuele] add hash HMAC", body)
+        self.assertIn("[lavoro] add hash HMAC", body)
         self.assertEqual(body.count("fix bug"), 1)
 
     def test_missing_readme_still_saves_repo(self):

@@ -1,65 +1,82 @@
 # CV Agents: il tuo CV su misura per ogni offerta
 
-Costruisce un CV (e in seguito una lettera) per una specifica offerta di lavoro usando **solo fatti veri su di te**, salvati in un archivio personale sul tuo computer. Funziona con un modello locale gratuito (nessuna chiave) oppure con Claude.
+Costruisce un CV per una specifica offerta di lavoro usando **solo fatti veri su di te**, salvati in un archivio personale sul tuo computer. Funziona con Claude (Claude Code o chiave API) oppure con un modello locale gratuito, senza chiavi.
 
-## Avvio rapido (5 minuti)
+## Avvio rapido
 
-Serve [uv](https://docs.astral.sh/uv/) (un gestore di Python) e Python 3.12 o più recente. Per il PDF serve anche Chromium o Chrome, e `pdftotext` se vuoi leggere CV in PDF.
+Serve [uv](https://docs.astral.sh/uv/) (installa Python da solo). Per il PDF serve Chromium o Chrome; per leggere CV in PDF serve `pdftotext` (poppler). Il Word non richiede nulla.
 
 ```sh
 git clone https://github.com/Emanuelee00/cv_manager.git
 cd cv_manager/agents
-uv run cvagents doctor      # controlla cosa hai e cosa manca
+uv run cvagents doctor      # cosa hai e cosa manca
 uv run cvagents start       # percorso guidato
 ```
 
-`start` ti chiede:
+### Hai Claude Code? Fai tutto nella chat
 
-1. **Quale AI usare.** Se non hai Claude, scegli "Scarica un modello locale": il programma sceglie un modello adatto alla tua RAM, ti dice quanto pesa e lo scarica con una barra di avanzamento. Gratis, senza chiavi, i dati restano sul tuo computer.
-2. **I tuoi dati**: nome, titolo, città, contatti. Età, cittadinanza, patente e foto sono facoltativi.
-3. **Il tuo CV** (file PDF, Word o testo, oppure incollato): l'AI ne estrae le voci e tu scegli quali tenere. Nulla viene salvato senza il tuo ok.
-4. **GitHub** (facoltativo): legge i tuoi repo pubblici, senza chiavi.
+Apri la cartella `cv_manager` in Claude Code (terminale o pannello di VS Code) e scrivi:
 
-Poi, per ogni offerta:
-
-```sh
-uv run cvagents cv offerta.txt        # offerta salvata in un file di testo
+```
+/cv-start
 ```
 
-Il programma scrive il CV, ti fa le domande se gli manca qualcosa, lo valuta, ti propone miglioramenti e produce un **PDF di una pagina** in `output/`.
+Claude ti fa le domande, legge il tuo CV, collega GitHub, costruisce il CV per l'offerta, te lo **mostra in anteprima** e, quando confermi, crea il **PDF o il Word**. Nessuna chiave da configurare.
 
-## Modello locale o Claude?
+### Dal terminale: `cvagents start`
+
+Ti chiede, un passo alla volta:
+
+1. **Quale AI usare.** Tre scelte, sempre visibili con il loro stato:
+   - **Claude Code**: usa il tuo login, nessuna chiave;
+   - **Claude con chiave API**: la chiave si incolla nascosta e non viene mai salvata su disco;
+   - **Modello locale gratuito**: il programma sceglie un modello Qwen3 adatto alla tua RAM, ti dice quanto pesa e lo scarica con Ollama. I dati restano sul computer.
+2. **I tuoi dati**: nome, titolo, città, contatti; età, cittadinanza, patente e foto sono facoltativi.
+3. **Il tuo CV** (PDF, Word, testo o incollato): l'AI ne estrae le voci e **tu scegli quali tenere**. Nulla viene salvato senza il tuo ok.
+4. **GitHub**: con la CLI `gh` (anche repo privati), solo repo pubblici, o niente.
+5. **L'offerta e il formato**: PDF, Word o entrambi.
+
+Alla fine ti mostra le scelte salvate e **il comando per far partire tutto**:
+
+```sh
+uv run cvagents run                 # usa l'offerta salvata
+uv run cvagents run altra.txt       # stessa configurazione, altra offerta
+```
+
+Prima di creare i file vedi un'**anteprima** nel terminale e confermi.
+
+## Claude o modello locale?
 
 | | Modello locale (Ollama) | Claude |
 |---|---|---|
-| Costo | gratis | a pagamento (o il tuo abbonamento) |
-| Privacy | tutto resta sul computer | i testi vengono inviati al servizio |
-| Qualità | buona per i fatti, più semplice nello stile | molto migliore |
-| Flusso | **lite**: veloce, un giro di miglioramento | **completo**: HR e manager separati, fino a 3 giri, humanizer |
+| Costo | gratis | il tuo abbonamento o a consumo |
+| Privacy | tutto resta sul computer | i testi vanno al servizio |
+| Qualità | sicura sui fatti, semplice nello stile | molto migliore |
+| Flusso | **lite**: il codice sceglie le voci, l'AI traduce e scrive il profilo, la valutazione la fa il codice | **completo**: recruiter e manager separati, fino a 3 giri di miglioramento, humanizer |
 
-Per usare Claude: `export ANTHROPIC_API_KEY=...` oppure installa Claude Code e fai login: `start` li trova da solo. Con Claude Code aperto in questa cartella puoi anche usare `/cv-loop` e `/letter-flow` (il percorso più completo).
-
-Il modello locale non è perfetto: per questo i controlli sui fatti (numeri, id, ripetizioni, una pagina) li fa il codice, non il modello. Un numero che non compare nel tuo archivio viene segnalato e tolto.
+Con il modello locale, sezioni, titoli e date vengono dal tuo archivio e ogni traduzione è accettata solo se numeri e link restano identici; le voci tradotte sono segnate nell'anteprima, da rileggere. Più il modello è grande (più RAM), migliore è il testo.
 
 ## Senza sudo (computer condivisi, scuola)
 
-`uv run cvagents doctor --install-here ~/ollama --pull` scarica Ollama e il modello in una cartella tua (solo Linux). Per mettere i modelli altrove: `--models-dir /percorso/grande`. Un modello pesa da 1,4 a 9 GB: controlla lo spazio.
+`uv run cvagents doctor --install-here ~/ollama --pull` scarica Ollama e il modello in una cartella tua (Linux). Per mettere i modelli altrove: `--models-dir /percorso/con/spazio`. Un modello pesa da 1,4 a 9 GB.
 
-## Comandi utili
+## Comandi
 
 | Comando | Cosa fa |
 |---|---|
 | `cvagents doctor` | RAM, modello consigliato, Ollama, Claude |
-| `cvagents start` | percorso guidato |
-| `cvagents cv <offerta.txt>` | CV per un'offerta |
-| `cvagents search "parole"` | cerca nel tuo archivio |
+| `cvagents start` | percorso guidato, salva le scelte |
+| `cvagents run [offerta.txt]` | rilancia tutto con le scelte salvate |
+| `cvagents cv <offerta.txt> --format pdf docx` | CV scegliendo l'AI al momento |
+| `cvagents search "parole"` / `show <id>` | cerca e legge il tuo archivio |
 | `cvagents add <tipo> <titolo> <testo>` | aggiunge una voce a mano |
-| `cvagents github-sync` | legge i tuoi repo con la CLI `gh` (anche privati) |
-| `cvagents render <cv.html>` | HTML a PDF e controllo di una pagina |
+| `cvagents exclude <id>` (`--undo`) | non usare mai (o di nuovo) una voce |
+| `cvagents github-sync` / `github-public <utente>` | legge i tuoi repo |
+| `cvagents build <cv.json> --format pdf docx` | file da un CV già pronto (usato da `/cv-start`) |
 
 ## Privacy
 
-Archivio, foto e PDF stanno in `agents/data/` e `agents/output/`, che **non finiscono su git**. Nessun dato personale è nel repository.
+Archivio, scelte, foto e file creati stanno in `agents/data/` e `agents/output/`, che **non finiscono su git**. Le chiavi API non vengono mai scritte su disco.
 
 ## Test
 

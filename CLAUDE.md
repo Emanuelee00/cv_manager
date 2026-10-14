@@ -14,11 +14,15 @@ CV Base: personal archive of experiences for CVs. One Node service with two face
 
 ## agents/ (CV e lettere)
 
-Python (uv, solo libreria standard) in `agents/cvagents/`: base dati personale SQLite con ricerca FTS5 (`db.py`, `search.py`), import del CV (`importer.py`), lettura GitHub con `gh` (`github.py`, `repo_content.py`), render PDF e controllo pagine (`render.py`). Comandi: `cd agents && uv run python -m cvagents <import|add|github-sync|github-deep|search|show|stats|render>`. Test: `cd agents && uv run python -m unittest discover -s tests -t .`.
+Python (uv; unica dipendenza esterna: `questionary`) in `agents/cvagents/`. Guida per chi clona: [agents/README.md](agents/README.md).
+- Archivio: `db.py`, `search.py` (SQLite + FTS5), `importer.py`, GitHub (`github.py` con `gh`, `github_public.py` senza chiavi).
+- AI: `llm/` (Ollama locale, API Claude, Claude Code via `claude -p`), `local_setup.py` e `ollama_install.py` (modello per RAM, installazione senza sudo).
+- Percorso: `onboarding/` (`cvagents start`), `pipeline/` (modo completo con Claude, modo lite per modelli piccoli: il codice sceglie le voci e controlla i fatti), `word/` (Word scritto a mano), `render.py` (PDF e pagine), `checks.py` (controlli deterministici).
+- Comandi in `commands/` (una tabella SPEC per modulo). Test: `cd agents && uv run python -m unittest discover -s tests -t .`.
 
-Agenti in `.claude/agents/` (si caricano riaprendo Claude Code): `cv-generator`, `hr-reviewer`, `manager`, `humanizer`, `letter-writer`, `humanizer-letter`, `style-copier`. Orchestratori come skill in `.claude/skills/`: `/cv-loop` e `/letter-flow` (una skill, non un agente, perché un agente non può chiamare altri agenti né fare domande all'utente).
+Agenti in `.claude/agents/` (generici: il candidato si legge da `manual:profilo-candidato`). Skill: `/cv-start` (tutto in Claude Code con anteprima), `/cv-loop`, `/letter-flow`. I prompt degli agenti sono la fonte unica: la CLI li riusa (`prompts.py`).
 
-Regole d'oro: i fatti vengono solo dal database; nessuna scrittura nel database senza ok dell'utente; mai inventare numeri o risultati; i punti incerti diventano domande; un agente = un compito; dati personali (foto, `agents/data/`, `agents/output/`) mai in git.
+Regole d'oro: i fatti vengono solo dall'archivio; nessuna scrittura senza ok dell'utente; mai inventare numeri o risultati (lo verifica il codice); un agente = un compito; dati personali e chiavi mai in git né su disco (chiavi).
 
 ## 1. Think Before Coding
 

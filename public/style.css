@@ -1,0 +1,35 @@
+:root{--navy:#1f3a5f;--acc:#0e7c86;--bg:#f5f7fa;--card:#fff;--text:#1b2430;--muted:#5b6675;--line:#dde3ea;--danger:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#10151c;--card:#19212b;--text:#e8edf3;--muted:#9aa7b6;--line:#2a3542;--navy:#8fb4e3;--acc:#4cc2cc;--danger:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+main,header.top{max-width:760px;margin:0 auto;padding:0 16px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:14px;padding-bottom:6px}
+h1{font-size:1.25rem;margin:0;color:var(--navy)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,select,input,textarea{font:inherit;color:inherit}
+button{border:1px solid var(--line);background:var(--card);padding:8px 12px;border-radius:10px;cursor:pointer;min-height:40px}
+button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+button.danger{color:var(--danger)}
+button.ghost{background:transparent}
+input,textarea,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+textarea{min-height:90px;resize:vertical}
+label{display:block;font-size:.85rem;color:var(--muted);margin:12px 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.card h3{margin:0 0 2px;font-size:1.02rem;color:var(--navy)}
+.meta{color:var(--muted);font-size:.88rem}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:.78rem;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:2px 9px;color:var(--muted)}
+.note{margin-top:8px;font-size:.85rem;background:#fff4d6;color:#5c4400;border-radius:8px;padding:6px 9px}
+@media (prefers-color-scheme:dark){.note{background:#3a3115;color:#f3dd9a}}
+.result{margin-top:6px;font-size:.93rem}
+.result b{color:var(--acc)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0}
+.chips button{white-space:nowrap;border-radius:99px}
+.chips button.on{background:var(--navy);border-color:var(--navy);color:var(--bg)}
+.field{position:relative}
+.mic{position:absolute;right:6px;top:6px;min-height:34px;padding:4px 9px}
+.mic.live{background:var(--danger);color:#fff;border-color:var(--danger)}
+.msg{color:var(--danger);min-height:1.3em;font-size:.9rem}
+.fab{position:fixed;right:18px;bottom:18px;border-radius:99px;padding:14px 20px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.login{max-width:380px;margin:12vh auto 0;padding:0 16px}
+.hint{font-size:.82rem;color:var(--muted)}

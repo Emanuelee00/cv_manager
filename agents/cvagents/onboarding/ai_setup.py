@@ -1,6 +1,9 @@
 """The three AI choices: Claude Code (login, no key), Claude with an API key, a free local model."""
 import os
+import shutil
+import subprocess
 import sys
+import urllib.parse
 from pathlib import Path
 
 from cvagents import local_setup, ollama_install, sysinfo
@@ -56,6 +59,15 @@ def make_provider(prompter, choice, model=None):
         prompter.say(t("ai.key_tip"))
         return AnthropicProvider(key)
     return setup_local(prompter, model)
+
+
+def move_to_chat(prompter, prompt="/cv-start"):
+    """With VS Code installed, offer to go on in the Claude Code chat: opens it with `prompt` (the extension's vscode:// link)."""
+    code = shutil.which("code")
+    if not code or not prompter.confirm(t("ai.open_chat"), default=True):
+        return False
+    uri = "vscode://anthropic.claude-code/open?" + urllib.parse.urlencode({"prompt": prompt})
+    return subprocess.run([code, "--open-url", uri], capture_output=True).returncode == 0
 
 
 def ensure_provider(prompter, attempts=3):

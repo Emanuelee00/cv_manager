@@ -52,6 +52,10 @@ TEXTS = {
                       "Fatto, {name}: {entries} voci dal CV, {repos} repo GitHub.\nScelte salvate: {choices}\nPer far partire tutto con queste scelte: {command}",
                       "Hecho, {name}: {entries} entradas de tu CV, {repos} repositorios de GitHub.\nOpciones guardadas: {choices}\nPara lanzarlo todo con estas opciones: {command}"),
     # AI choice
+    "ai.open_chat": ("Go on in the Claude Code chat in VS Code (it opens with /cv-start)?", "Continuer dans le chat Claude Code de VS Code (il s'ouvre avec /cv-start) ?",
+                     "Continuo nella chat di Claude Code in VS Code (si apre con /cv-start)?", "¿Sigo en el chat de Claude Code en VS Code (se abre con /cv-start)?"),
+    "ai.chat_opened": ("I opened the Claude Code chat in VS Code with /cv-start: press Enter there.", "J'ai ouvert le chat Claude Code dans VS Code avec /cv-start : appuyez sur Entrée là-bas.",
+                       "Ho aperto la chat di Claude Code in VS Code con /cv-start: premi Invio lì.", "He abierto el chat de Claude Code en VS Code con /cv-start: pulsa Intro allí."),
     "ai.question": ("Which AI do you want to use?", "Quelle IA voulez-vous utiliser ?", "Quale AI vuoi usare?", "¿Qué IA quieres usar?"),
     "ai.choice_cli": ("Claude Code: uses your login, no key", "Claude Code : utilise votre connexion, sans clé",
                       "Claude Code: usa il tuo login, nessuna chiave", "Claude Code: usa tu sesión, sin clave"),

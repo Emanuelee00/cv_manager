@@ -79,6 +79,14 @@ class Start(unittest.TestCase):
         self.assertTrue(any("File not found" in m for m in prompter.said))
         self.assertEqual(count_items(conn, "cv"), 1)
 
+    def test_claude_code_moves_to_the_vscode_chat(self):
+        with mock.patch("shutil.which", return_value="/usr/bin/code"), mock.patch("subprocess.run") as run:
+            run.return_value.returncode = 0
+            self.assertTrue(ai_setup.move_to_chat(ScriptedPrompter()))
+        self.assertEqual(run.call_args.args[0], ["/usr/bin/code", "--open-url", "vscode://anthropic.claude-code/open?prompt=%2Fcv-start"])
+        with mock.patch("shutil.which", return_value=None):
+            self.assertFalse(ai_setup.move_to_chat(ScriptedPrompter()))
+
     def test_from_zero_saves_the_typed_entries(self):
         conn = connect(":memory:")
         typed = ["Dev web", "Acme, Lyon", "2022 – 2024", "Sites pour 3 clients", "Langages", "Python, SQL"]

@@ -4,7 +4,7 @@ from cvagents.i18n import choose_language, t
 from cvagents.layouts import STYLES
 from cvagents.llm.base import LLMError
 from cvagents.onboarding import cv_text, extract
-from cvagents.onboarding.ai_setup import SetupIncomplete, ensure_provider
+from cvagents.onboarding.ai_setup import SetupIncomplete, ensure_provider, move_to_chat
 from cvagents.onboarding.ask_profile import ask_profile
 from cvagents.onboarding.github_step import choose_github, sync_github
 from cvagents.onboarding.job_search import ask_offer
@@ -63,6 +63,8 @@ def run_start(prompter, conn, provider=None, settings_path=settings.PATH, provid
         provider, ai, model = (provider, "local" if provider.local else "api", "") if provider else ensure_provider(prompter)
     except SetupIncomplete as err:
         return None, None, str(err)
+    if ai == "cli" and move_to_chat(prompter):
+        return None, None, t("ai.chat_opened")
     provider = provider_wrapper(provider) if provider_wrapper else provider
     prompter.say(t("start.using", provider=provider.describe()) + "\n")
     data = ask_profile(prompter)

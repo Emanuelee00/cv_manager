@@ -22,7 +22,7 @@ Open the `cv_manager` folder in Claude Code (terminal or the VS Code panel) and 
 /cv-start
 ```
 
-Claude asks the questions, reads your CV, connects GitHub, builds the CV for the offer, **shows you a preview** and, once you confirm, creates the **PDF or Word**. No key to configure.
+Claude asks the questions, reads your CV (or, with no CV, collects your experiences one by one in the chat), connects GitHub, builds the CV for the offer, **shows you a preview** and, once you confirm, creates the **PDF or Word**. No key to configure.
 
 ### In the terminal: what `make run` asks the first time
 
@@ -32,7 +32,7 @@ Claude asks the questions, reads your CV, connects GitHub, builds the CV for the
    - **Claude with an API key**: the key is typed hidden and never saved to disk;
    - **Free local model**: the program picks a Qwen3 model that fits your RAM, tells you its size and downloads it with Ollama. Your data stays on your computer.
 3. **Your details**: name, title, city, contacts; age, citizenship, driving licence and photo are optional.
-4. **Your CV** (PDF, Word, text or pasted): the AI extracts the entries and **you choose which to keep**. Nothing is saved without your OK.
+4. **Your CV** (PDF, Word, text or pasted): the AI extracts the entries and **you choose which to keep**. No CV? Choose to start from zero and type your experiences one by one (job, education, project, skills, languages...). Nothing is saved without your OK.
 5. **GitHub**: with the `gh` CLI (private repos too), public repos only, or not at all.
 6. **The offer and the format**: PDF, Word or both.
 
@@ -69,7 +69,8 @@ When you choose the local model on Linux, the program can download Ollama into a
 | `add <kind> <title> <text>` | add an entry by hand |
 | `exclude <id>` (`--undo`) | never use an entry again (or allow it back) |
 | `github-sync` / `github-public <user>` | read your repos |
-| `build <cv.json> --format pdf docx` | files from a ready CV (used by `/cv-start`) |
+| `build <cv.json> --format pdf docx --style classic` | files from a ready CV (used by `/cv-start`) |
+| `styles <cv.json>` | the same CV in the three styles, ranked by ATS score |
 
 ## Privacy
 

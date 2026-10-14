@@ -20,8 +20,14 @@ Run `uv run cvagents doctor` and summarise in one line what is there (Chromium i
 ## Step 2: who the candidate is
 `uv run cvagents show manual:candidate-profile`. If it exists, show it and ask whether it is still right. If it is missing, ask: name, headline, city, email, phones, links (GitHub, LinkedIn, portfolio), GitHub login; then the optional ones: age, citizenship, driving licence, path of a PNG photo. Write the profile with the lines `NAME:`, `HEADLINE:`, `CITY:`, `AGE:`, `CITIZENSHIP:`, `LICENSE:`, `GITHUB LOGIN:`, `PHOTO:`, `LINKS: ... · email ...`, show it and, after the OK, save it with a short Python script that calls `cvagents.onboarding.profile.save_profile` (see `agents/cvagents/onboarding/profile.py`).
 
-## Step 3: the existing CV
-Ask whether they have a CV (pdf/docx/txt file or pasted text). Read it yourself (Read, or `pdftotext` for PDFs). Extract the entries (type among experience, project, hackathon, achievement, education, skill, language; title, org, period, description, result, tags, link), copying dates and numbers exactly. Show the list and ask which to keep (multiple-choice AskUserQuestion, in groups). Save only the chosen ones: write a JSON in `agents/data/` and run `uv run cvagents import-entries <file.json>`.
+## Step 3: the existing CV, or from zero
+Ask whether they have a CV: a file (pdf/docx/txt), pasted text, or none ("I start from zero").
+
+With a CV: read it yourself (Read, or `pdftotext` for PDFs). Extract the entries (type among experience, project, hackathon, achievement, education, skill, language; title, org, period, description, result, tags, link), copying dates and numbers exactly. Show the list and ask which to keep (multiple-choice AskUserQuestion, in groups).
+
+From zero: collect the entries in the chat, one at a time, like `cvagents start` does in the terminal. Ask with AskUserQuestion what to add (a job or internship, education, a project or hackathon, a group of skills, languages, a certification, an interest, or "Done"); then ask in plain text the title, and only where it makes sense the place and city, the dates and what they did with real results (numbers only if true). Do not rewrite their words yet: show the entry and ask whether to keep it. Repeat until "Done".
+
+In both cases save only the kept entries: write a JSON in `agents/data/` (a list of objects with `type`, `title`, `org`, `period`, `description`) and run `uv run cvagents import-entries <file.json>`.
 
 ## Step 4: GitHub
 Ask whether to connect it: with the `gh` CLI already logged in (private repos too: `uv run cvagents github-sync`), public repos only (`uv run cvagents github-public <user>`), or not. If there are projects never to use, `uv run cvagents exclude <id>`.

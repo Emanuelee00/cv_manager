@@ -4,7 +4,7 @@ import os
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageEnhance, ImageOps, ImageStat
+from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageOps, ImageStat
 from rembg import new_session, remove
 
 BACKGROUND = (236, 238, 241)
@@ -25,11 +25,24 @@ def head_and_shoulders(mask):
     return x, y, x + side, y + side
 
 
+def fill_holes(mask):
+    """Holes inside the person (e.g. a burnt-out cheek, as white as the wall) become person: what the background,
+    flooded from the top corners, cannot reach. Done on a small copy, flood fill is slow on big images."""
+    small = mask.resize((max(1, mask.width // 4), max(1, mask.height // 4)))
+    for corner in ((0, 0), (small.width - 1, 0)):
+        if small.getpixel(corner) == 0:
+            ImageDraw.floodfill(small, corner, 128)
+    return ImageChops.lighter(mask, small.point(lambda v: 0 if v == 128 else 255).resize(mask.size))
+
+
 def even_light(image, mask):
-    """Brightness of the person towards a mid level (within limits), then gentle contrast."""
-    mean = ImageStat.Stat(image.convert("L"), mask).mean[0] or 1
-    image = ImageEnhance.Brightness(image).enhance(min(1.4, max(0.8, 135 / mean)))
-    return ImageEnhance.Contrast(ImageOps.autocontrast(image, cutoff=1)).enhance(1.05)
+    """Brightness of the person towards a mid level (within limits), never brighter if parts are already burnt out."""
+    gray = image.convert("L")
+    histogram = gray.histogram(mask)
+    factor = min(1.25, max(0.85, 120 / (ImageStat.Stat(gray, mask).mean[0] or 1)))
+    if sum(histogram[245:]) > 0.02 * max(1, sum(histogram)):
+        factor = min(factor, 1.0)
+    return ImageEnhance.Contrast(ImageEnhance.Brightness(image).enhance(factor)).enhance(1.05)
 
 
 def professional(src, dest):
@@ -37,7 +50,8 @@ def professional(src, dest):
     os.environ.setdefault("U2NET_HOME", str(MODELS))  # ~176 MB downloaded the first time: in data/, not in a small home
     image = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
     alpha = remove(image, session=new_session(MODEL)).getchannel("A").point(lambda a: 0 if a < 40 else a)
-    mask = alpha.point(lambda a: 255 if a > 128 else 0)
+    holes = fill_holes(alpha.point(lambda a: 255 if a > 128 else 0))
+    alpha, mask = ImageChops.lighter(alpha, holes), holes
     result = Image.new("RGB", image.size, BACKGROUND)
     result.paste(even_light(image, mask), mask=alpha)
     result.crop(head_and_shoulders(mask)).resize((SIZE, SIZE), Image.LANCZOS).save(dest)

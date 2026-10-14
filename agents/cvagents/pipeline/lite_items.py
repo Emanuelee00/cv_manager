@@ -1,5 +1,6 @@
 """Modo lite: le voci del CV le costruisce il codice dal database (sezione, titolo, date, testo)."""
 import json
+import re
 
 from cvagents.pipeline.text_tools import SKIP_PREFIXES, clean_title, cut_sentence, repo_text
 
@@ -29,6 +30,15 @@ def already_told(item, items):
     return len(key) > 4 and any(key in other["text"].lower() for other in items if other["section"] == item["section"])
 
 
+def recency(item):
+    """Per ordinare dal più recente: anno più alto nel periodo; «in corso», «previsto», «oggi» contano come futuro."""
+    period = item.get("period", "").lower()
+    if any(w in period for w in ("corso", "cours", "previst", "prévu", "oggi", "present", "aujourd")):
+        return 9999
+    years = re.findall(r"(?:19|20)\d\d", period)
+    return max(map(int, years)) if years else 0
+
+
 def build_items(rows):
     """Voci in ordine di rilevanza, con un massimo per sezione, senza doppioni. I repo senza testo utile si saltano."""
     items, count = [], {}
@@ -38,4 +48,5 @@ def build_items(rows):
         if row["kind"] in KIND_SECTION and usable and count.get(item["section"], 0) < CAPS[item["section"]]:
             count[item["section"]] = count.get(item["section"], 0) + 1
             items.append(item)
-    return items
+    dated = sorted((i for i in items if i["section"] in ("education", "experience")), key=recency, reverse=True)
+    return dated + [i for i in items if i["section"] not in ("education", "experience")]

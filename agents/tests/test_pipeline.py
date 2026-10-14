@@ -135,6 +135,19 @@ class Lite(unittest.TestCase):
         proposed = [o["row"]["id"] for o in lite_review.suggestions(conn, ["WordPress"], set())]
         self.assertNotIn("gh:secret", proposed)
 
+    def test_overclaiming_headline_and_third_person_are_removed(self):
+        reply = json.dumps({"headline": "Experte en IA", "profile": "Ada Rossi est développeuse. Je construis des sites web à Lyon."})
+        headline, profile = lite_profile.write_profile(FakeProvider(reply), "sys", "offre", PROFILE, [], "fr")
+        self.assertEqual(headline, "Dev")
+        self.assertEqual(profile, "Je construis des sites web à Lyon.")
+
+    def test_education_is_sorted_most_recent_first(self):
+        conn = connect(":memory:")
+        for i, period in enumerate(("2015 – 2020", "2025 – 2027 (previsto)", "2020 – 2024")):
+            upsert_item(conn, f"cv:{i}", "cv", "education", f"Scuola {i}", f"Studi {i}", {"period": period})
+        items = lite_items.build_items(conn.execute("SELECT * FROM items ORDER BY id").fetchall())
+        self.assertEqual([i["period"] for i in items], ["2025 – 2027 (previsto)", "2020 – 2024", "2015 – 2020"])
+
     def test_same_story_is_not_told_twice(self):
         laurea = {"section": "education", "title": "Laurea, Milano", "text": "Erasmus all'UCAM Murcia (2022).", "period": "", "source_id": "a"}
         erasmus = {"section": "education", "title": "Erasmus — UCAM Murcia", "text": "Erasmus a Murcia.", "period": "", "source_id": "b"}

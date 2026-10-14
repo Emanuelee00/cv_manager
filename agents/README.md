@@ -8,10 +8,11 @@ Serve [uv](https://docs.astral.sh/uv/) (installa Python da solo). Per il PDF ser
 
 ```sh
 git clone https://github.com/Emanuelee00/cv_manager.git
-cd cv_manager/agents
-uv run cvagents doctor      # cosa hai e cosa manca
-uv run cvagents start       # percorso guidato
+cd cv_manager
+make run                    # la prima volta: percorso guidato; dopo: rifà tutto con le tue scelte
 ```
+
+`make run OFFER=altra.txt` usa un'altra offerta con le stesse scelte. Altri comandi: `make doctor` (cosa hai e cosa manca), `make start` (rifare il percorso guidato), `make test`.
 
 ### Hai Claude Code? Fai tutto nella chat
 

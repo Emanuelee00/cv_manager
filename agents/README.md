@@ -31,7 +31,7 @@ Claude asks the questions, reads your CV (or, with no CV, collects your experien
    - **Claude Code**: uses your login, no key;
    - **Claude with an API key**: the key is typed hidden and never saved to disk;
    - **Free local model**: the program picks a Qwen3 model that fits your RAM, tells you its size and downloads it with Ollama. Your data stays on your computer.
-3. **Your details**: name, title, city, contacts; age, citizenship, driving licence and photo are optional.
+3. **Your details**: name, title, city, contacts; age, citizenship, driving licence and photo are optional. No photo? You can take one with the computer's camera (a page opens in the browser); it is made professional: neutral background (rembg), head-and-shoulders crop, even light. You choose the retouched one or the original.
 4. **Your CV** (PDF, Word, text or pasted): the AI extracts the entries and **you choose which to keep**. No CV? Choose to start from zero and type your experiences one by one (job, education, project, skills, languages...). Nothing is saved without your OK.
 5. **GitHub**: with the `gh` CLI (private repos too), public repos only, or not at all.
 6. **The offer**: a text file or, if you don't know what to look for, a **LinkedIn search**: what job, where (e.g. Marseille, France) and posted in the last how many days (e.g. 3). You pick one from the list. It uses LinkedIn's public pages through the [linkedin-search](linkedin-search/) CLI (MIT, from ai-job-search): personal use only, keep volume low (LinkedIn's terms).

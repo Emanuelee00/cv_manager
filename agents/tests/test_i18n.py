@@ -6,6 +6,7 @@ from pathlib import Path
 from cvagents import i18n
 from cvagents.messages import MESSAGES
 from cvagents.onboarding.manual_entries import KINDS
+from cvagents.photo.camera import TEXTS
 from tests.helpers import ScriptedPrompter
 
 SOURCE = Path(__file__).resolve().parents[1] / "cvagents"
@@ -13,12 +14,12 @@ DYNAMIC = {"profile.": ("name", "headline", "city", "email", "phones", "links", 
            "ai.choice_": ("cli", "api", "local"), "settings.github_": ("gh", "public", "skip"),
            "style.": ("classic", "modern", "minimal"), "style.hint_": ("classic", "modern", "minimal"),
            "manual.kind_": KINDS, "manual.title_": KINDS,
-           "manual.description_": ("experience", "education", "project", "skill", "language")}
+           "manual.description_": ("experience", "education", "project", "skill", "language"), "camera.": TEXTS}
 
 
 def used_keys():
     text = "\n".join(p.read_text(encoding="utf8") for p in SOURCE.rglob("*.py"))
-    keys = set(re.findall(r"""["']((?:common|start|ai|profile|cv|github|live|step|run|review|settings|cmd|doctor|ollama|llm|render|ats|style|styles|manual|jobs)\.[a-z_]+)["']""", text))
+    keys = set(re.findall(r"""["']((?:common|start|ai|profile|cv|github|live|step|run|review|settings|cmd|doctor|ollama|llm|render|ats|style|styles|manual|jobs|photo|camera)\.[a-z_]+)["']""", text))
     keys |= {prefix + suffix for prefix, suffixes in DYNAMIC.items() for suffix in suffixes}
     files = {"css", "docx", "html", "pdf", "json", "txt", "md", "png", "db", "com", "xml"}
     return {k for k in keys if not k.endswith((".", "_")) and k.rsplit(".", 1)[-1] not in files}

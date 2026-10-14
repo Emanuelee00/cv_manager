@@ -1,6 +1,6 @@
 """The profile questions."""
-from cvagents.cv_layout import resolve_photo
 from cvagents.i18n import t
+from cvagents.onboarding.photo_step import ask_photo
 from cvagents.onboarding.profile import FIELDS, OPTIONAL
 
 
@@ -12,5 +12,5 @@ def ask_profile(prompter, existing=None):
         data["name"] = prompter.text(t("profile.name_required"))
     prompter.say("\n" + t("profile.optional_intro"))
     data.update({key: prompter.text(t(f"profile.{key}") + ":", existing.get(key, "")) for key in OPTIONAL})
-    data["photo"] = resolve_photo(data["photo"])
+    data["photo"] = ask_photo(prompter, data["photo"])
     return data

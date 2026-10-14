@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$title</title>
+<style>
+  :root { --bg: #f4f5f7; --fg: #1d2330; --accent: #2457c5; --muted: #5b6475; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #15181e; --fg: #e8ebf1; --accent: #6f9bff; --muted: #9aa3b5; } }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; text-align: center; }
+  h1 { font-size: 1.3rem; margin: 8px 0; }
+  p { color: var(--muted); max-width: 560px; margin: 0 auto 12px; }
+  .frame { position: relative; display: inline-block; max-width: 100%; }
+  video, canvas { max-width: 100%; width: 560px; border-radius: 12px; background: #000; }
+  video { transform: scaleX(-1); }
+  .guide { position: absolute; left: 50%; top: 12%; width: 34%; height: 58%; transform: translateX(-50%);
+           border: 2px dashed rgba(255, 255, 255, .7); border-radius: 50%; pointer-events: none; }
+  button { margin: 12px 6px; padding: 10px 20px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font-size: 1rem; cursor: pointer; }
+  button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<h1>$title</h1>
+<p id="hint">$hint</p>
+<div class="frame" id="live"><video id="video" autoplay playsinline></video><div class="guide"></div></div>
+<canvas id="shot" hidden></canvas>
+<div>
+  <button id="take">$take</button>
+  <button id="retake" class="secondary" hidden>$retake</button>
+  <button id="use" hidden>$use</button>
+</div>
+<script>
+const video = document.getElementById("video"), shot = document.getElementById("shot"), hint = document.getElementById("hint");
+const take = document.getElementById("take"), retake = document.getElementById("retake"), use = document.getElementById("use");
+const show = (picture) => {
+  document.getElementById("live").hidden = picture; shot.hidden = !picture;
+  take.hidden = picture; retake.hidden = !picture; use.hidden = !picture;
+};
+navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false })
+  .then((stream) => { video.srcObject = stream; })
+  .catch(() => { hint.textContent = "$denied"; take.disabled = true; });
+take.onclick = () => {
+  shot.width = video.videoWidth; shot.height = video.videoHeight;
+  shot.getContext("2d").drawImage(video, 0, 0);
+  show(true);
+};
+retake.onclick = () => show(false);
+use.onclick = () => shot.toBlob((blob) => fetch("/photo", { method: "POST", body: blob }).then(() => {
+  video.srcObject.getTracks().forEach((track) => track.stop());
+  document.body.innerHTML = "<h1>$done</h1>";
+}), "image/png");
+</script>
+</body>
+</html>

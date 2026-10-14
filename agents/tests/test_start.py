@@ -75,7 +75,7 @@ class Start(unittest.TestCase):
     def test_from_zero_saves_the_typed_entries(self):
         conn = connect(":memory:")
         typed = ["Dev web", "Acme, Lyon", "2022 – 2024", "Sites pour 3 clients", "Langages", "Python, SQL"]
-        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + typed, selects=["en", "scratch", "experience", "skill", "done"], confirms=[True, False])
+        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + typed, selects=["en", "scratch", "experience", "skill", "done"], confirms=[False, True, False])
         self.assertIn("1 entries", start.run_start(prompter, conn, FakeProvider(), self.settings_path)[2])
         self.assertEqual(count_items(conn, "cv"), 1)
 

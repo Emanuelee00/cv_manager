@@ -18,7 +18,7 @@ Ask first, with AskUserQuestion: "Language · Langue · Lingua · Idioma" with E
 Run `uv run cvagents doctor` and summarise in one line what is there (Chromium is needed for the PDF; Word needs nothing). If `uv` is missing, explain how to install it and stop.
 
 ## Step 2: who the candidate is
-`uv run cvagents show manual:candidate-profile`. If it exists, show it and ask whether it is still right. If it is missing, ask: name, headline, city, email, phones, links (GitHub, LinkedIn, portfolio), GitHub login; then the optional ones: age, citizenship, driving licence, path of a PNG photo. Write the profile with the lines `NAME:`, `HEADLINE:`, `CITY:`, `AGE:`, `CITIZENSHIP:`, `LICENSE:`, `GITHUB LOGIN:`, `PHOTO:`, `LINKS: ... · email ...`, show it and, after the OK, save it with a short Python script that calls `cvagents.onboarding.profile.save_profile` (see `agents/cvagents/onboarding/profile.py`).
+`uv run cvagents show manual:candidate-profile`. If it exists, show it and ask whether it is still right. If it is missing, ask: name, headline, city, email, phones, links (GitHub, LinkedIn, portfolio), GitHub login; then the optional ones: age, citizenship, driving licence, path of a PNG photo. With no photo, offer to take one with the computer's camera and make it professional: use the `photo-pro` agent. Write the profile with the lines `NAME:`, `HEADLINE:`, `CITY:`, `AGE:`, `CITIZENSHIP:`, `LICENSE:`, `GITHUB LOGIN:`, `PHOTO:`, `LINKS: ... · email ...`, show it and, after the OK, save it with a short Python script that calls `cvagents.onboarding.profile.save_profile` (see `agents/cvagents/onboarding/profile.py`).
 
 ## Step 3: the existing CV, or from zero
 Ask whether they have a CV: a file (pdf/docx/txt), pasted text, or none ("I start from zero").

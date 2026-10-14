@@ -18,7 +18,7 @@ DYNAMIC = {"profile.": ("name", "headline", "city", "email", "phones", "links", 
 
 def used_keys():
     text = "\n".join(p.read_text(encoding="utf8") for p in SOURCE.rglob("*.py"))
-    keys = set(re.findall(r"""["']((?:common|start|ai|profile|cv|github|live|step|run|review|settings|cmd|doctor|ollama|llm|render|ats|style|styles|manual)\.[a-z_]+)["']""", text))
+    keys = set(re.findall(r"""["']((?:common|start|ai|profile|cv|github|live|step|run|review|settings|cmd|doctor|ollama|llm|render|ats|style|styles|manual|jobs)\.[a-z_]+)["']""", text))
     keys |= {prefix + suffix for prefix, suffixes in DYNAMIC.items() for suffix in suffixes}
     files = {"css", "docx", "html", "pdf", "json", "txt", "md", "png", "db", "com", "xml"}
     return {k for k in keys if not k.endswith((".", "_")) and k.rsplit(".", 1)[-1] not in files}

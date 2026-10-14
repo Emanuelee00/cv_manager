@@ -4,7 +4,7 @@ Builds a CV for one specific job offer using **only true facts about you**, kept
 
 ## Quick start
 
-You need [uv](https://docs.astral.sh/uv/) (it installs Python by itself) and `make`. For the PDF you need Chromium or Chrome; to read CVs in PDF you need `pdftotext` (poppler). Word needs nothing.
+You need `make` and `curl`: `make run` first runs `make install`, which installs what is missing without sudo ([uv](https://docs.astral.sh/uv/), which brings Python and the libraries, and [bun](https://bun.sh) for the LinkedIn search). For the PDF you need Chromium or Chrome; to read CVs in PDF you need `pdftotext` (poppler). Word needs nothing.
 
 ```sh
 git clone https://github.com/Emanuelee00/cv_manager.git
@@ -12,7 +12,7 @@ cd cv_manager
 make run
 ```
 
-The first `make run` asks the **language** (English, Français, Italiano, Español) and then guides you step by step. After that, `make run` runs everything again with your saved choices. `make run OFFER=other.txt` uses another offer with the same choices. Other commands: `make doctor` (what you have and what is missing), `make start` (do the guided path again), `make test`.
+The first `make run` asks the **language** (English, Français, Italiano, Español) and then guides you step by step. After that, `make run` runs everything again with your saved choices. `make run OFFER=other.txt` uses another offer with the same choices. Other commands: `make install` (only the installation), `make doctor` (what you have and what is missing), `make start` (do the guided path again), `make test`.
 
 ### Do you have Claude Code? Do it all in the chat
 
@@ -34,7 +34,8 @@ Claude asks the questions, reads your CV (or, with no CV, collects your experien
 3. **Your details**: name, title, city, contacts; age, citizenship, driving licence and photo are optional.
 4. **Your CV** (PDF, Word, text or pasted): the AI extracts the entries and **you choose which to keep**. No CV? Choose to start from zero and type your experiences one by one (job, education, project, skills, languages...). Nothing is saved without your OK.
 5. **GitHub**: with the `gh` CLI (private repos too), public repos only, or not at all.
-6. **The offer and the format**: PDF, Word or both.
+6. **The offer**: a text file or, if you don't know what to look for, a **LinkedIn search**: what job, where (e.g. Marseille, France) and posted in the last how many days (e.g. 3). You pick one from the list. It uses LinkedIn's public pages through the [linkedin-search](linkedin-search/) CLI (MIT, from ai-job-search): personal use only, keep volume low (LinkedIn's terms).
+7. **The format and the style**: PDF, Word or both.
 
 While the agents work you see a **live panel** (steps, time, the text the AI is writing). Before the files are created you see a **preview** and confirm. At the end you get the saved choices and the command to run it all again.
 

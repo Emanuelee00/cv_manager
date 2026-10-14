@@ -17,6 +17,7 @@ CV Base: personal archive of experiences for CVs. One Node service with two face
 Python (uv; external dependencies: `questionary`, `rich`) in `agents/cvagents/`. Guide for people who clone the repo: [agents/README.md](agents/README.md). Everything is in English; user-facing messages go through `i18n.t()` with the catalog in `messages.py` (en, fr, it, es).
 - Archive: `db.py`, `search.py` (SQLite + FTS5), `importer.py`, GitHub (`github.py` with `gh`, `github_public.py` without keys).
 - AI: `llm/` (local Ollama, Claude API, Claude Code via `claude -p`), `local_setup.py` and `ollama_install.py` (model by RAM, install without sudo).
+- Offers: `linkedin.py` calls the original `agents/linkedin-search/` CLI (TypeScript on bun, MIT, copied from ai-job-search: do not edit it); `onboarding/job_search.py` asks what, where and how many days. `make install` (run by `make run`) installs uv and bun without sudo.
 - Path: `onboarding/` (`make run` the first time = `cvagents start`), `pipeline/` (full mode with Claude; lite mode for small models where code picks the entries and checks the facts), `word/` (hand-written .docx), `render.py` (PDF and pages), `checks.py` (deterministic checks), `ats.py` (ATS checks), `live.py` (Rich live view).
 - Commands in `commands/` (one SPEC table per module). Tests: `cd agents && uv run python -m unittest discover -s tests -t .`.
 

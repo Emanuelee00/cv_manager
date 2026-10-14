@@ -1,4 +1,4 @@
-"""The guided path `cvagents start`: language, CV or from zero, AI, profile, entries, GitHub, offer, format and style."""
+"""The guided path `cvagents start`: language, CV or from zero, AI, profile, entries, GitHub, offer (or LinkedIn search), format and style."""
 from cvagents import ats_score, importer, settings
 from cvagents.i18n import choose_language, t
 from cvagents.layouts import STYLES
@@ -7,6 +7,7 @@ from cvagents.onboarding import cv_text, extract
 from cvagents.onboarding.ai_setup import SetupIncomplete, ensure_provider
 from cvagents.onboarding.ask_profile import ask_profile
 from cvagents.onboarding.github_step import choose_github, sync_github
+from cvagents.onboarding.job_search import ask_offer
 from cvagents.onboarding.manual_entries import collect_entries
 from cvagents.onboarding.profile import save_profile
 
@@ -27,9 +28,9 @@ def import_cv(prompter, conn, provider, how):
     return importer.add_entries(conn, [entries[i] for i in chosen])
 
 
-def ask_output(prompter, chosen):
-    """Offer (text file), formats and style; each style shows the best ATS score it allows."""
-    chosen["offer"] = prompter.text(t("start.offer_file"), chosen.get("offer", ""))
+def ask_output(prompter, chosen, profile):
+    """Offer (text file or LinkedIn search), formats and style; each style shows the best ATS score it allows."""
+    chosen["offer"] = ask_offer(prompter, profile, chosen.get("offer", ""))
     chosen["formats"] = prompter.checkbox(t("start.formats"), [("pdf", "PDF"), ("docx", "Word (.docx)")]) or ["pdf"]
     styles = sorted(STYLES, key=lambda s: -ats_score.best_possible(STYLES[s]))
     chosen["style"] = prompter.select(t("style.question"), [(s, t("style.option", style=t(f"style.{s}"), score=ats_score.best_possible(STYLES[s]),
@@ -53,7 +54,7 @@ def run_start(prompter, conn, provider=None, settings_path=settings.PATH, provid
     count = import_cv(prompter, conn, provider, how)
     mode, user = choose_github(prompter, data.get("github_login", ""))
     repos = sync_github(prompter, conn, mode, user)
-    chosen = ask_output(prompter, {**settings.load(settings_path), "ui_lang": ui_lang, "ai": ai, "model": model, "github": mode, "github_user": user})
+    chosen = ask_output(prompter, {**settings.load(settings_path), "ui_lang": ui_lang, "ai": ai, "model": model, "github": mode, "github_user": user}, data)
     settings.save(chosen, settings_path)
     command = settings.RUN_COMMAND + ("" if chosen["offer"] else " OFFER=<file>")
     return provider, chosen, t("start.summary", name=data["name"], entries=count, repos=repos, choices=settings.describe(chosen), command=command)

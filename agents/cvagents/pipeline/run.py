@@ -59,19 +59,20 @@ def natural_pass(prompter, provider, cv):
     return new_cv
 
 
-def produce(prompter, candidate, cv, lang, folder, formats):
+def produce(prompter, candidate, cv, lang, folder, formats, style="classic"):
     """Preview in the terminal, confirmation, then the files: PDF always fitted to one page, Word with the same content."""
     prompter.say("\n" + t("run.preview") + "\n" + cv_as_text(cv))
     if not prompter.confirm(t("run.create_question")):
         return []
     with prompter.step(t("step.files_docx" if "docx" in formats else "step.files")):
-        files, pages, dropped, problems = write_files(candidate, cv, lang, folder, formats)
-    prompter.say(t("run.files", files=", ".join(map(str, files)), pages=pages) + ("\n" + t("run.dropped", items=", ".join(dropped)) if dropped else ""))
-    prompter.say(ats_summary(problems))
-    return files
+        done = write_files(candidate, cv, lang, folder, formats, style)
+    prompter.say(t("run.files", files=", ".join(map(str, done["files"])), pages=done["pages"]) +
+                 ("\n" + t("run.dropped", items=", ".join(done["dropped"])) if done["dropped"] else ""))
+    prompter.say(t("ats.score", score=done["score"], style=t(f"style.{style}")) + "\n" + ats_summary(done["problems"]))
+    return done["files"]
 
 
-def run_cv(prompter, conn, provider, offer, lang=None, folder="output", formats=("pdf",)):
+def run_cv(prompter, conn, provider, offer, lang=None, folder="output", formats=("pdf",), style="classic"):
     """Return (created files, final cv). Never writes to the database."""
     lang = lang or detect_lang(offer)
     prompter.say(t("run.header", provider=provider.describe(), lang=lang, mode=t("run.mode_lite" if provider.local else "run.mode_full")))
@@ -84,4 +85,4 @@ def run_cv(prompter, conn, provider, offer, lang=None, folder="output", formats=
             rows = context.retrieve(conn, provider, offer)
         cv = improve_loop(prompter, provider, system, offer, build_cv(prompter, provider, system, offer, rows, candidate, lang), lang)
     cv = natural_pass(prompter, provider, cv)
-    return produce(prompter, candidate, cv, lang, folder, formats), cv
+    return produce(prompter, candidate, cv, lang, folder, formats, style), cv

@@ -5,7 +5,8 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from cvagents import render
+from cvagents import layouts, render
+from cvagents.cv_layout import parse_profile
 from cvagents.db import connect, upsert_item
 from cvagents.pipeline import context, cv_html, generate, humanize, keywords, lite_items, lite_profile, lite_review, review, text_tools, translate
 from cvagents.pipeline.lang import detect_lang
@@ -67,9 +68,9 @@ class Humanize(unittest.TestCase):
 
 class Html(unittest.TestCase):
     def test_profile_parse_and_clickable_links(self):
-        p = cv_html.parse_profile(PROFILE + "\nPHONES: vedi manual:phones")
+        p = parse_profile(PROFILE + "\nPHONES: vedi manual:phones")
         self.assertEqual((p["name"], p["license"], p["email"]), ("Ada Rossi", "B", "ada@x.fr"))
-        page = cv_html.build_html(PROFILE, generate.parse_cv(cv_json()), "fr")
+        page = layouts.render_html("classic", PROFILE, generate.parse_cv(cv_json()), "fr")
         self.assertIn('href="mailto:ada@x.fr"', page)
         self.assertIn("FORMATION", page)
         self.assertLess(page.index("FORMATION"), page.index("EXPÉRIENCE"))

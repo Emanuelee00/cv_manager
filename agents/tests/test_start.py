@@ -32,7 +32,7 @@ class Start(unittest.TestCase):
     def test_choices_are_saved_and_command_is_shown(self):
         conn = connect(":memory:")
         offer = cv_file("offre")
-        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + [offer], selects=["en", "skip"], checks=["pdf", "docx"])
+        prompter = ScriptedPrompter(texts=PROFILE_TEXTS + [offer], selects=["en", "scratch", "done"], checks=["pdf", "docx"])
         _, chosen, summary = start.run_start(prompter, conn, FakeProvider(), self.settings_path)
         saved = settings.load(self.settings_path)
         self.assertEqual((saved["offer"], saved["formats"], saved["ai"]), (offer, ["pdf", "docx"], "local"))
@@ -42,7 +42,7 @@ class Start(unittest.TestCase):
     def test_exclusions_survive_a_new_start(self):
         conn = connect(":memory:")
         set_excluded(conn, "gh:segreto")
-        start.run_start(ScriptedPrompter(texts=PROFILE_TEXTS, selects=["en", "skip"]), conn, FakeProvider(), self.settings_path)
+        start.run_start(ScriptedPrompter(texts=PROFILE_TEXTS, selects=["en", "scratch", "done"]), conn, FakeProvider(), self.settings_path)
         self.assertEqual(set_excluded(conn, "gh:altro"), ["gh:altro", "gh:segreto"])
         self.assertEqual(set_excluded(conn, "gh:altro", False), ["gh:segreto"])
     def test_full_path_saves_profile_and_confirmed_entries(self):
@@ -69,7 +69,7 @@ class Start(unittest.TestCase):
 
     def test_skip_cv(self):
         conn = connect(":memory:")
-        prompter = ScriptedPrompter(texts=PROFILE_TEXTS, selects=["en", "skip"], confirms=[False])
+        prompter = ScriptedPrompter(texts=PROFILE_TEXTS, selects=["en", "scratch", "done"], confirms=[False])
         self.assertIn("0 entries", start.run_start(prompter, conn, FakeProvider(), self.settings_path)[2])
 
     def test_ai_not_available_stops_cleanly(self):

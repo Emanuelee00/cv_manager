@@ -3,7 +3,7 @@ import re
 import subprocess
 import zipfile
 
-from cvagents.cv_layout import LABELS, ORDER
+from cvagents.cv_layout import LABELS
 
 RISKY = {"→": "->", "←": "<-", "➜": "->", "⇒": "->", "★": "", "☆": "", "✓": "", "✔": "", "✗": "", "•": "-", "▶": "-", "◆": "-", "■": "-"}
 
@@ -28,14 +28,15 @@ def pdf_text(pdf):
         return ""
 
 
-def text_problems(text, cv, lang, name, email):
-    """Message keys (with values) for what an ATS would miss: no text, name, email, section titles (alone on their line) out of order."""
+def text_problems(text, cv, lang, name, email, kinds):
+    """Message keys (with values) for what an ATS would miss: no text, name, email, section titles (alone on their line)
+    missing or not in the layout's reading order `kinds`."""
     if not text.strip():
         return [("ats.no_text", {})]
     flat = text.lower()
     problems = [(key, {}) for key, value in (("ats.missing_name", name), ("ats.missing_email", email)) if value and value.lower() not in flat]
     labels = LABELS.get(lang, LABELS["en"])
-    titles = [labels["profile"]] + [labels[k] for k in ORDER if any(i["section"] == k for i in cv["items"])]
+    titles = [labels[k] for k in kinds]
     lines = [line.strip().lower() for line in text.splitlines()]
     positions = [lines.index(title.lower()) if title.lower() in lines else -1 for title in titles]
     if -1 in positions or positions != sorted(positions):

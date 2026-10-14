@@ -6,7 +6,7 @@ from cvagents.i18n import t
 
 PATH = Path(__file__).resolve().parent.parent / "data" / "settings.json"
 DEFAULTS = {"ui_lang": "", "ai": "", "model": "", "github": "skip", "github_user": "", "offer": "", "lang": "",
-            "formats": ["pdf"], "out": "output"}
+            "formats": ["pdf"], "style": "classic", "out": "output"}
 RUN_COMMAND = "make run"
 
 
@@ -27,4 +27,5 @@ def describe(settings):
     """Readable summary of the saved choices."""
     ai = {"cli": "Claude Code", "api": t("settings.ai_api"), "local": t("settings.ai_local", model=settings["model"])}.get(settings["ai"], "?")
     github = t(f"settings.github_{settings['github']}") + (f" ({settings['github_user']})" if settings["github_user"] else "")
-    return t("settings.summary", ai=ai, github=github, formats=", ".join(settings["formats"]), offer=settings["offer"] or t("settings.no_offer"))
+    formats = ", ".join(settings["formats"]) + f" · {t('style.' + settings['style'])}"
+    return t("settings.summary", ai=ai, github=github, formats=formats, offer=settings["offer"] or t("settings.no_offer"))

@@ -1,19 +1,20 @@
-"""The guided path `cvagents start`: language, AI, profile, CV, GitHub, offer and format; saves the choices."""
-from cvagents import importer, settings
+"""The guided path `cvagents start`: language, CV or from zero, AI, profile, entries, GitHub, offer, format and style."""
+from cvagents import ats_score, importer, settings
 from cvagents.i18n import choose_language, t
+from cvagents.layouts import STYLES
 from cvagents.llm.base import LLMError
 from cvagents.onboarding import cv_text, extract
 from cvagents.onboarding.ai_setup import SetupIncomplete, ensure_provider
 from cvagents.onboarding.ask_profile import ask_profile
 from cvagents.onboarding.github_step import choose_github, sync_github
+from cvagents.onboarding.manual_entries import collect_entries
 from cvagents.onboarding.profile import save_profile
 
 
-def import_cv(prompter, conn, provider):
-    """Ask for the CV (file or pasted text), extract its entries and save the confirmed ones."""
-    how = prompter.select(t("cv.question"), [("file", t("cv.option_file")), ("paste", t("cv.option_paste")), ("skip", t("cv.option_skip"))])
-    if how == "skip":
-        return 0
+def import_cv(prompter, conn, provider, how):
+    """Read the CV (file or pasted text), extract its entries and save the confirmed ones; or collect them by hand."""
+    if how == "scratch":
+        return importer.add_entries(conn, collect_entries(prompter))
     try:
         text = cv_text.read_cv_text(prompter.text(t("cv.path"))) if how == "file" else prompter.text(t("cv.paste"))
         with prompter.step(t("step.read_cv")):
@@ -27,9 +28,12 @@ def import_cv(prompter, conn, provider):
 
 
 def ask_output(prompter, chosen):
-    """Offer (text file) and CV formats."""
+    """Offer (text file), formats and style; each style shows the best ATS score it allows."""
     chosen["offer"] = prompter.text(t("start.offer_file"), chosen.get("offer", ""))
     chosen["formats"] = prompter.checkbox(t("start.formats"), [("pdf", "PDF"), ("docx", "Word (.docx)")]) or ["pdf"]
+    styles = sorted(STYLES, key=lambda s: -ats_score.best_possible(STYLES[s]))
+    chosen["style"] = prompter.select(t("style.question"), [(s, t("style.option", style=t(f"style.{s}"), score=ats_score.best_possible(STYLES[s]),
+                                                                   hint=t(f"style.hint_{s}"))) for s in styles])
     return chosen
 
 
@@ -37,6 +41,7 @@ def run_start(prompter, conn, provider=None, settings_path=settings.PATH, provid
     """The whole path. Returns (provider, settings, summary) or (None, None, message)."""
     ui_lang = choose_language(prompter, settings.load(settings_path)["ui_lang"])
     prompter.say(t("start.intro"))
+    how = prompter.select(t("cv.question"), [("file", t("cv.option_file")), ("paste", t("cv.option_paste")), ("scratch", t("cv.option_scratch"))])
     try:
         provider, ai, model = (provider, "local" if provider.local else "api", "") if provider else ensure_provider(prompter)
     except SetupIncomplete as err:
@@ -45,7 +50,7 @@ def run_start(prompter, conn, provider=None, settings_path=settings.PATH, provid
     prompter.say(t("start.using", provider=provider.describe()) + "\n")
     data = ask_profile(prompter)
     save_profile(conn, data)
-    count = import_cv(prompter, conn, provider)
+    count = import_cv(prompter, conn, provider, how)
     mode, user = choose_github(prompter, data.get("github_login", ""))
     repos = sync_github(prompter, conn, mode, user)
     chosen = ask_output(prompter, {**settings.load(settings_path), "ui_lang": ui_lang, "ai": ai, "model": model, "github": mode, "github_user": user})

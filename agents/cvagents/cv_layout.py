@@ -6,13 +6,13 @@ ROOTS = (Path.cwd(), Path(__file__).resolve().parents[2], Path(__file__).resolve
 
 LABELS = {
     "fr": {"profile": "PROFIL", "education": "FORMATION", "experience": "EXPÉRIENCE", "project": "PROJETS", "skill": "COMPÉTENCES",
-           "language": "LANGUES", "certification": "CERTIFICATIONS", "interest": "CENTRES D'INTÉRÊT"},
+           "language": "LANGUES", "certification": "CERTIFICATIONS", "interest": "CENTRES D'INTÉRÊT", "contact": "CONTACT"},
     "it": {"profile": "PROFILO", "education": "FORMAZIONE", "experience": "ESPERIENZA", "project": "PROGETTI", "skill": "COMPETENZE",
-           "language": "LINGUE", "certification": "CERTIFICAZIONI", "interest": "INTERESSI"},
+           "language": "LINGUE", "certification": "CERTIFICAZIONI", "interest": "INTERESSI", "contact": "CONTATTI"},
     "en": {"profile": "PROFILE", "education": "EDUCATION", "experience": "EXPERIENCE", "project": "PROJECTS", "skill": "SKILLS",
-           "language": "LANGUAGES", "certification": "CERTIFICATIONS", "interest": "INTERESTS"},
+           "language": "LANGUAGES", "certification": "CERTIFICATIONS", "interest": "INTERESTS", "contact": "CONTACT"},
     "es": {"profile": "PERFIL", "education": "FORMACIÓN", "experience": "EXPERIENCIA", "project": "PROYECTOS", "skill": "COMPETENCIAS",
-           "language": "IDIOMAS", "certification": "CERTIFICACIONES", "interest": "INTERESES"}}
+           "language": "IDIOMAS", "certification": "CERTIFICACIONES", "interest": "INTERESES", "contact": "CONTACTO"}}
 ORDER = ("education", "experience", "project", "skill", "language", "certification", "interest")
 INLINE = ("skill", "language", "certification", "interest")
 LICENSE = {"fr": "Permis", "it": "Patente", "en": "Driving licence", "es": "Carné de conducir"}

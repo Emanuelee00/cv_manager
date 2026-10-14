@@ -2,14 +2,22 @@
 import json
 
 from cvagents import settings
+from cvagents.live import LiveBoard
+from cvagents.live_wrappers import TrackedPrompter, TrackedProvider
 from cvagents.onboarding import Aborted, QuestionaryPrompter, SetupIncomplete, ensure_provider, make_provider, run_start
 from cvagents.pipeline import candidate_text, run_cv, write_files
 
 
+def tracked(title):
+    """Prompter con la vista dal vivo e una funzione che aggancia lo stesso pannello al provider."""
+    board = LiveBoard(title)
+    return TrackedPrompter(QuestionaryPrompter(), board), lambda provider: TrackedProvider(provider, board)
+
+
 def start_cmd(args, conn):
     try:
-        prompter = QuestionaryPrompter()
-        provider, chosen, summary = run_start(prompter, conn)
+        prompter, track = tracked("CV Base")
+        provider, chosen, summary = run_start(prompter, conn, provider_wrapper=track)
         if provider and chosen["offer"] and prompter.confirm("Faccio partire subito il CV per questa offerta?"):
             run_cv(prompter, conn, provider, open(chosen["offer"], encoding="utf8").read(), chosen["lang"] or None, chosen["out"], chosen["formats"])
         return summary
@@ -19,8 +27,8 @@ def start_cmd(args, conn):
 
 def cv_cmd(args, conn):
     try:
-        prompter = QuestionaryPrompter()
-        provider = ensure_provider(prompter)[0]
+        prompter, track = tracked("CV")
+        provider = track(ensure_provider(prompter)[0])
         files, _ = run_cv(prompter, conn, provider, open(args.offer, encoding="utf8").read(), args.lang, args.out, args.format)
         return "Pronto: " + ", ".join(map(str, files)) if files else "Nessun file creato."
     except (SetupIncomplete, Aborted) as err:
@@ -33,10 +41,10 @@ def run_cmd(args, conn):
     offer = args.offer or chosen["offer"]
     if not chosen["ai"] or not offer:
         return "Prima lancia `cvagents start` (oppure indica il file: cvagents run offerta.txt)."
-    prompter = QuestionaryPrompter()
+    prompter, track = tracked(f"CV · {offer}")
     prompter.say(settings.describe({**chosen, "offer": offer}))
     try:
-        provider = make_provider(prompter, chosen["ai"], chosen["model"] or None)
+        provider = track(make_provider(prompter, chosen["ai"], chosen["model"] or None))
         files, _ = run_cv(prompter, conn, provider, open(offer, encoding="utf8").read(), chosen["lang"] or None, chosen["out"], chosen["formats"])
         return "Pronto: " + ", ".join(map(str, files)) if files else "Nessun file creato."
     except (SetupIncomplete, Aborted) as err:

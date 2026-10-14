@@ -1,9 +1,13 @@
 """Finti prompter e provider per i test."""
+from contextlib import nullcontext
+
 from cvagents.llm.base import Provider
 
 
 class ScriptedPrompter:
     """Risponde da una lista; per select/confirm/checkbox usa i valori scelti dal test."""
+
+    step = staticmethod(nullcontext)
 
     def __init__(self, texts=(), selects=(), confirms=(), checks=None):
         self.texts, self.selects, self.confirms, self.checks = list(texts), list(selects), list(confirms), checks

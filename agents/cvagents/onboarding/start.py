@@ -19,8 +19,8 @@ def import_cv(prompter, conn, provider):
         return 0
     try:
         text = cv_text.read_cv_text(prompter.text("Percorso del file:")) if how == "file" else prompter.text("Incolla il testo:")
-        prompter.say("Leggo il CV (con un modello piccolo può volerci qualche minuto)...")
-        entries = extract.extract_entries(provider, text, lambda i: prompter.say(f"  parte {i}..."))
+        with prompter.step("Lettura del CV e estrazione delle voci"):
+            entries = extract.extract_entries(provider, text)
     except (ValueError, OSError, LLMError) as err:
         prompter.say(f"Non ci sono riuscito: {err}")
         return 0
@@ -36,13 +36,14 @@ def ask_output(prompter, chosen):
     return chosen
 
 
-def run_start(prompter, conn, provider=None, settings_path=settings.PATH):
+def run_start(prompter, conn, provider=None, settings_path=settings.PATH, provider_wrapper=None):
     """Percorso completo. Ritorna (provider, impostazioni, riepilogo) o (None, None, messaggio)."""
     prompter.say(INTRO)
     try:
         provider, ai, model = (provider, "local" if provider.local else "api", "") if provider else ensure_provider(prompter)
     except SetupIncomplete as err:
         return None, None, str(err)
+    provider = provider_wrapper(provider) if provider_wrapper else provider
     prompter.say(f"Userò: {provider.describe()}\n")
     data = ask_profile(prompter)
     save_profile(conn, data)

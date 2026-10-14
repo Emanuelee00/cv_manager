@@ -2,6 +2,7 @@
 import json
 import re
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
 
 from cvagents.llm.base import LLMError
 from cvagents.prompts import load_agent_prompt
@@ -35,12 +36,14 @@ def review_lite(provider, offer, cv):
     return parse_review(raw)
 
 
-def review_full(provider, offer, cv):
-    """HR e manager con i loro prompt completi, in parallelo. Ritorna i due testi."""
+def review_full(provider, offer, cv, step=nullcontext):
+    """HR e manager con i loro prompt completi, in parallelo (ognuno con il suo passo a schermo). Ritorna i due testi."""
     message = f"OFFERTA:\n{offer[:6000]}\n\nCV:\n{cv_as_text(cv)}"
+    labels = {"hr-reviewer": "Recruiter", "manager": "Manager tecnico"}
 
     def ask(name):
-        return provider.chat([{"role": "system", "content": load_agent_prompt(name)}, {"role": "user", "content": message}])
+        with step(labels[name]):
+            return provider.chat([{"role": "system", "content": load_agent_prompt(name)}, {"role": "user", "content": message}])
 
     with ThreadPoolExecutor(max_workers=2) as pool:
         hr, manager = pool.map(ask, ("hr-reviewer", "manager"))

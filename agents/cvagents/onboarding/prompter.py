@@ -1,4 +1,6 @@
 """Domande all'utente nel terminale (questionary). I test usano un finto prompter con gli stessi metodi."""
+from contextlib import nullcontext
+
 import questionary
 
 
@@ -15,6 +17,7 @@ def answer(question):
 
 class QuestionaryPrompter:
     say = staticmethod(print)
+    step = staticmethod(nullcontext)
 
     def text(self, message, default="", hidden=False):
         question = questionary.password(message) if hidden else questionary.text(message, default=default)

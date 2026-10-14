@@ -13,29 +13,35 @@ GOOD_SCORE = 8
 def build_cv(prompter, provider, system, offer, rows, candidate, lang):
     """Prima stesura, domande al candidato, correzione dei problemi trovati dal codice."""
     ctx = context.format_context(rows)
-    cv = generate.generate(provider, system, offer, ctx, candidate, lang)
+    with prompter.step("Generatore: prima stesura"):
+        cv = generate.generate(provider, system, offer, ctx, candidate, lang)
     answers = "\n".join(f"- {q}: {prompter.text(q)}" for q in cv["questions"])
     if answers.replace("\n", "").strip("- "):
-        cv = generate.generate(provider, system, offer, ctx, candidate, lang, answers)
+        with prompter.step("Generatore: stesura con le tue risposte"):
+            cv = generate.generate(provider, system, offer, ctx, candidate, lang, answers)
     for _ in range(2):
         problems = generate.find_problems(cv, rows, candidate)
         if not problems:
             break
-        cv = generate.repair(provider, system, cv, problems, lang)
+        with prompter.step(f"Correzione: {len(problems)} problemi trovati dal codice"):
+            cv = generate.repair(provider, system, cv, problems, lang)
     return cv
 
 
 def improve_loop(prompter, provider, system, offer, cv, lang):
     """Modo completo: HR e manager separati, fino a 3 giri; l'utente sceglie cosa migliorare."""
     for round_number in range(3):
-        result = improve.merge_reviews(provider, review.review_full(provider, offer, cv))
+        reviews = review.review_full(provider, offer, cv, prompter.step)
+        with prompter.step("Sintesi dei pareri"):
+            result = improve.merge_reviews(provider, reviews)
         prompter.say(f"\nValutazione: {result['score']}/10\n" + "\n".join(f"- {p}" for p in result["problems"]))
         if result["score"] >= GOOD_SCORE and not result["problems"]:
             break
         chosen = prompter.checkbox("Quali miglioramenti applico?", [(f, f) for f in result["fixes"]]) if result["fixes"] else []
         if not chosen:
             break
-        cv = improve.apply_fixes(provider, system, cv, chosen, lang)
+        with prompter.step(f"Riscrittura: {len(chosen)} miglioramenti"):
+            cv = improve.apply_fixes(provider, system, cv, chosen, lang)
         if round_number < 2 and not prompter.confirm("Un altro giro di valutazione?"):
             break
     return cv
@@ -46,7 +52,8 @@ def natural_pass(prompter, provider, cv):
     if not prompter.confirm("Vuoi una passata per rendere il testo più naturale?", default=not provider.local):
         return cv
     channel = prompter.select("Chi leggerà il CV?", [("A", "Una persona (mail, contatto diretto)"), ("B", "Un portale o LinkedIn")])
-    new_cv, note = humanize.humanize_cv(provider, cv, channel)
+    with prompter.step(f"Humanizer (modo {channel})"):
+        new_cv, note = humanize.humanize_cv(provider, cv, channel)
     prompter.say(note)
     return new_cv
 
@@ -56,7 +63,8 @@ def produce(prompter, candidate, cv, lang, folder, formats):
     prompter.say("\nANTEPRIMA\n" + cv_as_text(cv))
     if not prompter.confirm("Creo il CV con questo contenuto?"):
         return []
-    files, pages, dropped = write_files(candidate, cv, lang, folder, formats)
+    with prompter.step("File: PDF in una pagina" + (" e Word" if "docx" in formats else "")):
+        files, pages, dropped = write_files(candidate, cv, lang, folder, formats)
     prompter.say(f"File: {', '.join(map(str, files))} (PDF: {pages} pagina/e)" + (f"\nTolte per stare in una pagina: {', '.join(dropped)}" if dropped else ""))
     return files
 
@@ -68,9 +76,10 @@ def run_cv(prompter, conn, provider, offer, lang=None, folder="output", formats=
     system = load_agent_prompt("cv-generator", None if not provider.local else LITE_SECTIONS)
     candidate = context.candidate_text(conn)
     if provider.local:
-        cv = lite_loop(prompter, conn, provider, offer, build_lite(provider, system, conn, offer, lang))
+        cv = lite_loop(prompter, conn, provider, offer, build_lite(prompter, provider, system, conn, offer, lang))
     else:
-        rows = context.retrieve(conn, provider, offer)
+        with prompter.step("Ricerca nell'archivio"):
+            rows = context.retrieve(conn, provider, offer)
         cv = improve_loop(prompter, provider, system, offer, build_cv(prompter, provider, system, offer, rows, candidate, lang), lang)
     cv = natural_pass(prompter, provider, cv)
     return produce(prompter, candidate, cv, lang, folder, formats), cv

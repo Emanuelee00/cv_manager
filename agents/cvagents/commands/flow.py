@@ -1,5 +1,6 @@
 """Flow commands: start (guided), cv and run (with saved choices)."""
 from cvagents import settings
+from cvagents.profile import OUTPUT
 from cvagents.i18n import t
 from cvagents.live import LiveBoard
 from cvagents.live_wrappers import TrackedPrompter, TrackedProvider
@@ -57,6 +58,6 @@ STYLE = ("--style", {"choices": ["classic", "modern", "minimal"], "default": "cl
 LANG = ("--lang", {"default": None, "choices": ["fr", "it", "en", "es"]})
 SPEC = [
     ("start", "Guided path: language, CV or from scratch, AI, your details, GitHub, offer, format and style", [], start_cmd),
-    ("cv", "CV for an offer, choosing the AI now", [("offer", {}), LANG, ("--out", {"default": "output"}), FORMAT, STYLE], cv_cmd),
+    ("cv", "CV for an offer, choosing the AI now", [("offer", {}), LANG, ("--out", {"default": OUTPUT}), FORMAT, STYLE], cv_cmd),
     ("run", "Redo everything with the choices saved by start", [("offer", {"nargs": "?", "default": ""})], run_cmd),
 ]

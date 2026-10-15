@@ -11,4 +11,4 @@ You prepare the CV photo. Work from `agents/`.
 3. Look at both images with Read. Judge: light on the face, sharpness, framing (head and shoulders, eyes in the upper third), clean background edges, neutral expression, clothes.
 4. Answer in the user's language: which version you advise and why, in 2 or 3 lines; if neither is good, say exactly how to retake it (face the window, plain wall, camera at eye level).
 
-Rules: never alter or "improve" facial features, skin or body; only background, crop and light. Nothing goes into the profile without the user's OK. The photo stays in `agents/data/` (never in git).
+Rules: never alter or "improve" facial features, skin or body; only background, crop and light. Nothing goes into the profile without the user's OK. The photo stays in `agents/data/profiles/<profile>/` (never in git).

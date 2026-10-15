@@ -5,6 +5,7 @@ from pathlib import Path
 from cvagents.i18n import ats_summary, t
 from cvagents.layouts import STYLES
 from cvagents.pipeline import candidate_text, write_files
+from cvagents.profile import OUTPUT
 
 
 def load_cv(path):
@@ -36,6 +37,6 @@ FORMAT = ("--format", {"nargs": "+", "choices": ["pdf", "docx"], "default": ["pd
 STYLE = ("--style", {"choices": list(STYLES), "default": "classic"})
 LANG = ("--lang", {"default": "fr", "choices": ["fr", "it", "en", "es"]})
 SPEC = [
-    ("build", "Create PDF/Word from a CV in JSON", [("cv_json", {}), LANG, ("--out", {"default": "output"}), FORMAT, STYLE], build_cmd),
-    ("styles", "The same CV in the three styles, ranked by ATS score", [("cv_json", {}), LANG, ("--out", {"default": "output"})], styles_cmd),
+    ("build", "Create PDF/Word from a CV in JSON", [("cv_json", {}), LANG, ("--out", {"default": OUTPUT}), FORMAT, STYLE], build_cmd),
+    ("styles", "The same CV in the three styles, ranked by ATS score", [("cv_json", {}), LANG, ("--out", {"default": OUTPUT})], styles_cmd),
 ]

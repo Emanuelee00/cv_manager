@@ -75,7 +75,7 @@ When you choose the local model on Linux, the program can download Ollama into a
 
 ## Privacy
 
-Archive, choices, photo and created files live in `agents/data/` and `agents/output/`, which **never go to git**. API keys are never written to disk.
+Archive, choices, photo and created files live in `agents/data/profiles/<name>/` and `agents/output/<name>/` (one folder per person, chosen with `CVAGENTS_PROFILE=<name>`), which **never go to git**. API keys are never written to disk.
 
 ## Tests
 

@@ -4,7 +4,9 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-DEFAULT_DB = Path(__file__).resolve().parent.parent / "data" / "cvbase.db"
+from cvagents.profile import DIR
+
+DEFAULT_DB = DIR / "cvbase.db"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS items (

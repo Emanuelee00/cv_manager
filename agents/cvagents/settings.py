@@ -3,10 +3,11 @@ import json
 from pathlib import Path
 
 from cvagents.i18n import t
+from cvagents.profile import DIR, OUTPUT
 
-PATH = Path(__file__).resolve().parent.parent / "data" / "settings.json"
+PATH = DIR / "settings.json"
 DEFAULTS = {"ui_lang": "", "ai": "", "model": "", "github": "skip", "github_user": "", "offer": "", "lang": "",
-            "formats": ["pdf"], "style": "classic", "out": "output"}
+            "formats": ["pdf"], "style": "classic", "out": OUTPUT}
 RUN_COMMAND = "make run"
 
 

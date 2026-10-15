@@ -8,7 +8,7 @@ from cvagents.llm.base import LLMError
 from cvagents.prompts import load_agent_prompt
 
 TEXTS_SCHEMA = {"type": "object", "required": ["texts"], "properties": {"texts": {"type": "array", "items": {"type": "string"}}}}
-SECTIONS = ("Absolute rule", "What you look for", "How you rewrite")
+SECTIONS = ("Absolute rule", "The candidate's tone", "What you look for", "How you rewrite")
 MODES = {"A": "Mode A: light touch, a person will read the CV.", "B": "Mode B: deeper rewrite, the CV goes through a portal."}
 
 

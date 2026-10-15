@@ -3,16 +3,16 @@ from cvagents.cv_layout import parse_profile
 from cvagents.layouts import classic, sidebar
 
 STYLES = {
-    "classic": {"render": lambda p, cv, lang: classic.render(p, cv, lang, "classic.css"), "order": classic.reading_order,
+    "classic": {"render": lambda p, cv, lang, scale=1: classic.render(p, cv, lang, "classic.css"), "order": classic.reading_order,
                 "columns": 1, "bars": False, "icons": False},
-    "minimal": {"render": lambda p, cv, lang: classic.render(p, cv, lang, "minimal.css"), "order": classic.reading_order,
+    "minimal": {"render": lambda p, cv, lang, scale=1: classic.render(p, cv, lang, "minimal.css"), "order": classic.reading_order,
                 "columns": 1, "bars": False, "icons": False},
     "modern": {"render": sidebar.render, "order": sidebar.reading_order, "columns": 2, "bars": True, "icons": True},
 }
 
 
-def render_html(style, profile_text, cv, lang):
-    return STYLES[style]["render"](parse_profile(profile_text), cv, lang)
+def render_html(style, profile_text, cv, lang, scale=1.0):
+    return STYLES[style]["render"](parse_profile(profile_text), cv, lang, scale)
 
 
 def reading_order(style, cv):

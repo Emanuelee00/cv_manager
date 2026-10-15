@@ -3,7 +3,8 @@ import re
 
 LEVELS = (("native", 100), ("maternelle", 100), ("madrelingua", 100), ("materna", 100), ("nativo", 100), ("bilingu", 100),
           ("c2", 95), ("c1", 85), ("b2", 70), ("b1", 55), ("a2", 35), ("a1", 20),
-          ("notion", 20), ("nozion", 20), ("basic", 20), ("básico", 20), ("base", 20))
+          ("notion", 20), ("nozion", 20), ("basic", 20), ("básico", 20), ("base", 20),
+          ("courant", 100), ("fluent", 100), ("fluente", 100), ("fluide", 100))
 
 
 def bullets(text, limit=4):

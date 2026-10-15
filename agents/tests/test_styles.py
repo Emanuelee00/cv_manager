@@ -2,6 +2,7 @@ import unittest
 
 from cvagents import ats_score
 from cvagents.layouts import STYLES, reading_order, render_html, sidebar
+from cvagents.layouts.common import linkify
 from cvagents.layouts.text_parts import bullets, language_levels, skill_tags
 from cvagents.onboarding.manual_entries import collect_entries
 from tests.helpers import ScriptedPrompter
@@ -12,6 +13,42 @@ CV = {"headline": "Alternance dev", "profile": "Développeuse web.", "items": [
     {"section": "skill", "title": "Skills", "text": "Python, SQL · Docker. Git", "source_id": "b"},
     {"section": "language", "title": "Langues", "text": "italien (langue maternelle) · anglais (courant, C1/C2) · russe (notions)", "source_id": "c"},
     {"section": "interest", "title": "Voyages", "text": "Voyages", "source_id": "d"}]}
+
+
+class Links(unittest.TestCase):
+    def test_web_addresses_in_texts_become_clickable_links(self):
+        out = linkify("Code sur github.com/ada/app. Aussi https://ada.github.io/portfolio (voir BENCHMARK.md)")
+        self.assertIn('<a href="https://github.com/ada/app">github.com/ada/app</a>.', out)
+        self.assertIn('<a href="https://ada.github.io/portfolio">https://ada.github.io/portfolio</a>', out)
+        self.assertNotIn("<a href=\"https://BENCHMARK", out)
+        self.assertEqual(linkify("a < b & c"), "a &lt; b &amp; c")
+
+    def test_an_entry_without_title_is_a_plain_line_without_bullet_or_bold(self):
+        cv = {"headline": "Dev", "profile": "Ok.", "items": [{"section": "project", "title": "", "text": "Tout est sur mon GitHub", "source_id": "x"}]}
+        html = render_html("classic", PROFILE, cv, "fr")
+        self.assertIn('<li style="list-style:none;margin:7px 0 5px">Tout est sur mon GitHub</li>', html)
+
+
+class ModernKeepsEverything(unittest.TestCase):
+    def test_no_sentence_and_no_skill_is_cut_and_no_empty_bullet_is_drawn(self):
+        text = " ".join(f"Phrase numéro {n} de la description." for n in range(1, 8))
+        cv = {"headline": "Dev", "profile": "Ok.", "items": [
+            {"section": "project", "title": "Gros projet", "text": text, "source_id": "a"},
+            {"section": "education", "title": "Diplôme", "period": "2020", "text": "", "source_id": "b"},
+            {"section": "skill", "title": "S", "text": ", ".join(f"Outil{n}" for n in range(30)), "source_id": "c"}]}
+        page = render_html("modern", PROFILE, cv, "fr")
+        self.assertIn("Phrase numéro 7 de la description.", page)
+        self.assertIn("Outil29", page)
+        self.assertNotIn("<li></li>", page)
+
+
+class LinkedinLabel(unittest.TestCase):
+    def test_the_automatic_code_is_hidden_in_the_label_but_kept_in_the_link(self):
+        from cvagents.layouts.common import contacts
+        p = {"phone": "", "email": "", "links": ["https://www.linkedin.com/in/ada-rossi-680a2b417", "https://www.linkedin.com/in/ada-rossi"]}
+        self.assertEqual([(k, label, href) for k, label, href in contacts(p)],
+                         [("linkedin", "linkedin.com/in/ada-rossi", "https://www.linkedin.com/in/ada-rossi-680a2b417"),
+                          ("linkedin", "linkedin.com/in/ada-rossi", "https://www.linkedin.com/in/ada-rossi")])
 
 
 class TextParts(unittest.TestCase):

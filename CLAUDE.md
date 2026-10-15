@@ -24,6 +24,8 @@ Python (uv; external dependencies: `questionary`, `rich`, `pillow`, `rembg`) in 
 
 Agents in `.claude/agents/` (generic: the candidate is read from `manual:candidate-profile`). Skills: `/cv-start` (everything inside Claude Code, with preview), `/cv-loop`, `/letter-flow`. The agent prompts are the single source: the CLI reuses them (`prompts.py`).
 
+Learning rule: every correction the user gives about a CV, mail or letter is applied to the document and also written as a general rule in the agents' prompts (`.claude/agents/`, `.claude/skills/`, without personal data) and in the candidate's guides in the archive (`manual:candidate-voice`, `manual:candidate-learnings`), so the agents improve each time; when a new kind of check is needed, add an agent.
+
 Golden rules: facts come only from the archive; nothing is written without the user's OK; never invent numbers or results (code checks it); one agent = one job; personal data and keys never in git, keys never on disk.
 
 ## 1. Think Before Coding

@@ -43,7 +43,7 @@ Ask the channel: a person by email (A) or a portal/LinkedIn (B).
 Follow the `/cv-loop` skill from step 2 (generator, questions, recruiter and manager in parallel, choice of what to improve, max 3 rounds, humanizer with the channel). At the end you have the CV as data: `headline`, `profile`, `items` (each with `section` among education, experience, project, skill, language, certification, interest; `title`, `period`, `text`, `source_id`).
 
 ## Step 7: preview and confirmation
-Show the full preview of the CV in the chat, in Markdown, in the order Profile, Education, Experience, Projects, Skills, Languages, Certifications, Interests (with the titles in the CV language). Then ask with AskUserQuestion:
+Show the full preview of the CV in the chat, in Markdown (and write it to `agents/output/cv_<offer>_preview.md` so it can be read in the VS Code preview), in the order Profile, Education, Experience, Projects, Skills, Languages, Certifications, Interests (with the titles in the CV language). Then ask with AskUserQuestion:
 1. "Do you confirm this content?" (Yes / I want to change something).
 2. "Which format?" (PDF / Word / both).
 Only after confirmation: write the CV to `agents/data/cv_<offer>.json` and run `uv run cvagents build agents/data/cv_<offer>.json --lang <fr|it|en|es> --format pdf docx --out output`. The command checks that the PDF fits one page, removes the least important entries if needed, and runs the ATS check: tell the user both results.

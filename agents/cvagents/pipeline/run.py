@@ -7,7 +7,7 @@ from cvagents.pipeline.output import write_files
 from cvagents.pipeline.review import cv_as_text
 from cvagents.prompts import load_agent_prompt
 
-LITE_SECTIONS = ("Style",)
+LITE_SECTIONS = ("Style", "Title, voice and links", "Honesty checks")
 GOOD_SCORE = 8
 
 

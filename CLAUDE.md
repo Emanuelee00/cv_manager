@@ -26,7 +26,7 @@ Agents in `.claude/agents/` (generic: the candidate is read from `manual:candida
 
 Learning rule: every correction the user gives about a CV, mail or letter is applied to the document and also written as a general rule in the agents' prompts (`.claude/agents/`, `.claude/skills/`, without personal data) and in the candidate's guides in the archive (`manual:candidate-voice`, `manual:candidate-learnings`), so the agents improve each time; when a new kind of check is needed, add an agent.
 
-Profiles: one folder per person, `agents/data/profiles/<name>/` and `agents/output/<name>/`, chosen with `CVAGENTS_PROFILE=<name>` (`cvagents/profile.py`); data never mixes. `.claude/` (agents, skills) and the code are changed only by the owner.
+Profiles: one folder per person, `agents/data/profiles/<name>/` and `agents/output/<name>/`, chosen with `CVAGENTS_PROFILE=<name>` (`cvagents/profile.py`); a new person gets a folder automatically with `python -m cvagents.new_profile "First Last"` (agent `profile-keeper`); data never mixes. `.claude/` (agents, skills) and the code are changed only by the owner.
 
 Golden rules: facts come only from the archive; nothing is written without the user's OK; never invent numbers or results (code checks it); one agent = one job; personal data and keys never in git, keys never on disk.
 

@@ -79,6 +79,7 @@ If the offer asks for skills about AI, data, security or tools, search the `kind
 - **Cross-check:** for every chosen project also search the repo (`--source github`) and merge entry and README. School projects count.
 - **First sentence of the profile: where the candidate studies now** ("Je suis étudiant à <école> depuis <année> (<niveau>)"), right away; then the earlier background (technical school, other studies).
 - **Link the path in one true sentence** when the education mixes fields (technical diploma, other studies, current school): say why the candidate came back to the current field; mark parallel studies ("En parallèle de <école>") and never remove degrees to simplify.
+- **Alternance: duration and rhythm in the profile** ("de 1 ou 2 ans, à raison d'une semaine à l'école pour deux en entreprise", from `manual:availability`), with the start date.
 - **Why alternance, why stage:** an alternance is what the candidate needs to validate the title; a stage is to develop practical skills in the field. Write each with its own reason, never the reverse.
 - **Profile of 4-5 short sentences** (the order is in `manual:candidate-cv-model`). If the candidate studies at a project-based school, show it through the projects that matter for the offer, described by what they taught, without repeating names and technologies that appear later in Projects.
 - **Languages:** one plain level per language ("langue maternelle", "courant"), never higher than the database, never a range like C1/C2; do not write "bilingual" or "professional" unless the database says so.

@@ -23,7 +23,8 @@ Before changing anything read, with `cd agents && uv run python -m cvagents show
 6. **Skills:** the offer's keywords first, only true ones; certifications: the most relevant ones, courses written "cours".
 7. **Everything the candidate has already corrected stays corrected** (repeated words, colons, stock phrases, register): see `manual:candidate-voice`.
 8. **Stage vs alternance:** the availability date goes in the profile only for work-study offers.
-9. **One page.** If it overflows, shorten the texts, never let entries drop silently. Build with `cd agents && uv run python -m cvagents build <json> --lang <fr|it|en|es> --out <folder>` (add `--style modern` only if asked) and read its output: "removed:" means too long.
+9. **Photo.** The build must not print "WARNING: no photo"; if it does, fix the photo path and rebuild before handing back.
+10. **One page.** If it overflows, shorten the texts, never let entries drop silently. Build with `cd agents && uv run python -m cvagents build <json> --lang <fr|it|en|es> --out <folder>` (add `--style modern` only if asked) and read its output: "removed:" means too long.
 
 ## ATS best practices (apply them, always tied to the offer)
 Search the web for the current advice (WebSearch, official or public-service sources first: France Travail, APEC, recruitment-software vendors' help pages; advice sites second), cite the links and separate "rule or documented behaviour" from "good practice". Then apply what holds, together with the offer's own words:

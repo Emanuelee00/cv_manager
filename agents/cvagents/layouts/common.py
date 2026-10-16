@@ -1,6 +1,7 @@
 """Pieces shared by every CV layout: escaping, contacts, photo, page shell."""
 import html
 import re
+import sys
 from pathlib import Path
 
 TEMPLATES = Path(__file__).resolve().parents[2] / "templates"
@@ -32,7 +33,10 @@ def contacts(p):
 
 def photo_tag(p):
     path = Path(p["photo"]).expanduser() if p["photo"] else None
-    return f'<img class="photo" src="{path.resolve().as_uri()}" alt="">' if path and path.is_file() else ""
+    if path and path.is_file():
+        return f'<img class="photo" src="{path.resolve().as_uri()}" alt="">'
+    print(f"WARNING: no photo in the CV ({path or 'PHOTO not set in manual:candidate-profile'}).", file=sys.stderr)
+    return ""
 
 
 def page(lang, name, css_file, body, scale=1):

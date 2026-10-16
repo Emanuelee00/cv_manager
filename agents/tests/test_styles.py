@@ -91,3 +91,14 @@ class FromScratch(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PhotoWarning(unittest.TestCase):
+    def test_missing_photo_warns(self):
+        import contextlib
+        import io
+        from cvagents.layouts.common import photo_tag
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            self.assertEqual(photo_tag({"photo": "/nonexistent/photo.png"}), "")
+        self.assertIn("WARNING: no photo", err.getvalue())

@@ -347,6 +347,10 @@ TEXTS = {
     "cmd.built": ("Files: {files} · PDF {pages} page(s)", "Fichiers : {files} · PDF {pages} page(s)", "File: {files} · PDF {pages} pagina/e",
                   "Archivos: {files} · PDF {pages} página(s)"),
     "cmd.dropped": (" · removed: {items}", " · retirés : {items}", " · tolte: {items}", " · quitadas: {items}"),
+    "cmd.eml": ("Mail file: {file} · attached: {attachment} ({size} KB)", "Fichier du mail : {file} · en pièce jointe : {attachment} ({size} Ko)",
+                "File della mail: {file} · allegato: {attachment} ({size} KB)", "Archivo del correo: {file} · adjunto: {attachment} ({size} KB)"),
+    "cmd.eml_no_attachment": ("The mail has no 'Pièce jointe :' line with the CV file name.", "Le mail n'a pas de ligne « Pièce jointe : » avec le nom du CV.",
+                              "La mail non ha la riga «Pièce jointe :» con il nome del CV.", "El correo no tiene la línea «Pièce jointe :» con el nombre del CV."),
     # doctor
     "doctor.ram": ("RAM: {ram} GiB", "RAM : {ram} Gio", "RAM: {ram} GiB", "RAM: {ram} GiB"),
     "doctor.ram_unknown": ("RAM: not detected", "RAM : non détectée", "RAM: non rilevata", "RAM: no detectada"),

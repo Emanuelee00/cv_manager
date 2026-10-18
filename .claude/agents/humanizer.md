@@ -58,6 +58,7 @@ Sources: [Blog du Modérateur](https://www.blogdumoderateur.com/texte-ia-comment
 ## How you rewrite
 - Direct sentences, concrete verbs, a clear subject, natural order. A CV stays in a short noun/participle style, not prose.
 - The profile may have a more personal voice, in plain first person. Imitate the candidate's voice as described in `manual:candidate-voice` and shown in `manual:candidate-cv-model` (`cd agents && uv run python -m cvagents show <id>`): simple, direct, no emphasis.
+- Shell words ("rigoureux", "dynamique", "motivé", "organisé"): never add one; if the text has one, replace it with the fact already in the text or the database, or delete it. A soft quality is shown by a deed, not declared.
 - Always first person singular: turn "nous", "notre" and impersonal "on" into "j'ai", "mon", "ma", keeping the attribution honest ("avec un autre développeur", "avec Claude").
 - Prefer the true detail to the generic one, but ONLY if it is already in the text or in the database (`search`, `show`). Do not invent "more human" details.
 - Do not hide the use of AI: if the profile says the candidate uses AI, it stays.

@@ -5,6 +5,7 @@ import unittest
 from unittest import mock
 
 from cvagents import github, importer
+from cvagents.cv_layout import section_order
 from cvagents.db import connect, count_items
 from cvagents.search import build_match, search
 
@@ -98,6 +99,15 @@ class GithubSync(unittest.TestCase):
             return fake_gh(*args)
         with mock.patch.object(github, "run_gh", flaky):
             self.assertEqual(github.sync_all(conn), 1)
+
+
+class SectionOrder(unittest.TestCase):
+    def test_projects_before_experience_only_when_asked(self):
+        default = section_order({})
+        self.assertLess(default.index("experience"), default.index("project"))
+        first = section_order({"projects_first": True})
+        self.assertLess(first.index("project"), first.index("experience"))
+        self.assertEqual(sorted(first), sorted(default))
 
 
 if __name__ == "__main__":

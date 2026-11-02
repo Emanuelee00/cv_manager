@@ -2,7 +2,7 @@
 import re
 from pathlib import Path
 
-from cvagents.cv_layout import INLINE, LABELS, LICENSE, ORDER, parse_profile
+from cvagents.cv_layout import INLINE, LABELS, LICENSE, parse_profile, section_order
 from cvagents.word.layout import floating_picture, png_size
 from cvagents.word.package import write_package
 from cvagents.word.parts import GREY, NAVY, TEAL, link, para, run
@@ -51,7 +51,7 @@ def build_docx(profile_text, cv, lang, path):
     rels, labels, p = [], LABELS.get(lang, LABELS["en"]), parse_profile(profile_text)
     head, photo = header(p, cv, lang, rels)
     body = head + para([run(labels["profile"], True, 19, TEAL)], 30, 120, border=True) + para([run(cv["profile"])], 40)
-    for kind in ORDER:
+    for kind in section_order(cv):
         items = [i for i in cv["items"] if i["section"] == kind]
         body += section(kind, items, labels[kind]) if items else ""
     return write_package(path, body, rels, photo)

@@ -1,5 +1,5 @@
 """One-column layouts (classic and minimal): the most ATS-friendly; they differ only by their CSS."""
-from cvagents.cv_layout import INLINE, LABELS, LICENSE, ORDER
+from cvagents.cv_layout import INLINE, LABELS, LICENSE, section_order
 from cvagents.layouts.common import contacts, esc, linkify, page, photo_tag
 
 
@@ -22,7 +22,7 @@ def section_html(kind, items, label):
 
 def reading_order(cv):
     """Section kinds in the order a parser reads them."""
-    return ["profile"] + [k for k in ORDER if any(i["section"] == k for i in cv["items"])]
+    return ["profile"] + [k for k in section_order(cv) if any(i["section"] == k for i in cv["items"])]
 
 
 def render(p, cv, lang, css_file):

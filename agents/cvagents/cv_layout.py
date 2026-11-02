@@ -15,6 +15,16 @@ LABELS = {
            "language": "IDIOMAS", "certification": "CERTIFICACIONES", "interest": "INTERESES", "contact": "CONTACTO"}}
 ORDER = ("education", "experience", "project", "skill", "language", "certification", "interest")
 INLINE = ("skill", "language", "certification", "interest")
+
+
+def section_order(cv, order=ORDER):
+    """The same order, with projects before experience when the CV says "projects_first": true."""
+    order = list(order)
+    if cv.get("projects_first") and "experience" in order and "project" in order:
+        order.insert(order.index("experience"), order.pop(order.index("project")))
+    return order
+
+
 LICENSE = {"fr": "Permis", "it": "Patente", "en": "Driving licence", "es": "Carné de conducir"}
 
 

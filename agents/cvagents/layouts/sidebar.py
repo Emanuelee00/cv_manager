@@ -1,7 +1,7 @@
 """Modern two-column layout (like a classic French template): sidebar on the left with photo, contact, languages,
 skills and interests; main column on the right. In the file the main column comes FIRST, so parsers read name,
 profile and experience before the sidebar; CSS places the sidebar on the left."""
-from cvagents.cv_layout import INLINE, LABELS, LICENSE
+from cvagents.cv_layout import INLINE, LABELS, LICENSE, section_order
 from cvagents.layouts.common import contacts, esc, linkify, page, photo_tag
 from cvagents.layouts.icons import icon
 from cvagents.layouts.text_parts import language_levels, skill_tags
@@ -43,14 +43,14 @@ def aside_html(p, cv, lang, labels):
 
 def reading_order(cv):
     present = {i["section"] for i in cv["items"]}
-    return ["profile"] + [k for k in MAIN if k in present] + [k for k in SIDE if k in present]
+    return ["profile"] + [k for k in section_order(cv, MAIN) if k in present] + [k for k in SIDE if k in present]
 
 
 def render(p, cv, lang, scale=1, css_file="modern.css"):
     labels = LABELS.get(lang, LABELS["en"])
     inline = lambda k: '<p class="txt">' + " · ".join(esc(i["text"] or i["title"]) for i in cv["items"] if i["section"] == k) + "</p>"
     sections = "".join(f"<h2>{labels[k]}</h2>" + (inline(k) if k in INLINE else "".join(entry_html(i) for i in cv["items"] if i["section"] == k))
-                       for k in MAIN if any(i["section"] == k for i in cv["items"]))
+                       for k in section_order(cv, MAIN) if any(i["section"] == k for i in cv["items"]))
     main = (f'<main><div class="who"><h1>{name_html(p["name"])}</h1><div class="sub">{esc(cv.get("headline", ""))}</div></div>'
             f'<h2>{labels["profile"]}</h2><p>{esc(cv["profile"])}</p>{sections}</main>')
     return page(lang, p["name"], css_file, f'<div class="sheet"><div class="band"></div>{main}{aside_html(p, cv, lang, labels)}</div>', scale)
